@@ -9,20 +9,15 @@ uranium = commands.Bot(command_prefix="u.", intents=intents)
 @uranium.event
 async def on_ready():
     print(f'We have logged in as {uranium.user}')
-    #uranium.status = "discord bot development totally isn't hard"
-
-@uranium.event
-async def on_message(message):
-    if message.author == uranium.user:
-        return
-
-    await uranium.process_commands(message)
+    
+    game = discord.Game("with proxies! | u.help")
+    await uranium.change_presence(status=discord.Status.online, activity=game)
 
 @uranium.command()
 async def userid(ctx):
     await ctx.reply("you have a user id of {0} lmao that's lame what a weirdo".format(ctx.message.author.id), mention_author=False)
 
-@uranium.command(description="erm... what the what?")
+@uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
     title="About Uranium", description="Uranium is a Discord bot that is used for roleplay and for use in systems/plurality.", color=0x20FD00
@@ -33,8 +28,8 @@ async def about(ctx):
     embedVar.set_footer(text="Created by BurningInfern0.")
     await ctx.send(embed=embedVar)
 
-@uranium.command(description="have me say something!")
-async def say(ctx, msg):
+@uranium.command()
+async def say(ctx, *, msg):
     await ctx.message.delete()
     await ctx.send(msg)
 
