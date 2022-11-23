@@ -14,7 +14,7 @@ try:
     f = open("token", "r")
     tokenTest = f.read()
 except:
-    print("[URANIUM|Error] Token file could not be found, please create a bot via discordapi.com and copy the bot token into a file called 'token'.")
+    print("[URANIUM|Error] Token file could not be found or could not be read successfully, please create a bot via discordapi.com and copy the bot token into a file called 'token'.")
     exit()
 print("[URANIUM] Token file exists.")
 userDataExists = os.path.exists("./user-data/")
@@ -64,8 +64,34 @@ async def init(ctx):
         databaseCreation.close()
         await ctx.send(":white_check_mark: *Your database has been created and initialized. You can now create proxies.*")
 
-@uranium.command()
-async def wh(ctx, name: str, *, msg):
+@uranium.group()
+async def wh(ctx):
+    pass
+
+@wh.command(description="mainly for debugging", aliases=["p"])
+async def present(ctx):
+    direc = os.listdir("./webhook-data/")
+    for file in direc:
+        if str(ctx.channel.id) in file:
+            webhookRead = open("./webhook-data/{0}".format(str(ctx.channel.id), "r"))
+            webhookID = webhookRead.read()
+            webhookRead.close()
+            await ctx.send(":white_check_mark: Webhook ID of {0} for this channel is present in my local database.".format(str(webhookID)))
+            break
+    else:
+        await ctx.send(":x: I do not have a local webhook database entry for this channel.")
+
+    webhookList = await ctx.message.channel.webhooks()
+    try:
+        for wh in webhookList:
+           if str(webhookID) == str(wh):
+               await ctx.send(":white_check_mark: My local webhook database entry for this channel was found in this channel's webhook list.")
+               return
+    except:
+        await ctx.send(":x: My local webhook database did not find a match in this channel's webhook list.")
+
+@wh.command(aliases=["s"])
+async def send(ctx, name: str, *, msg):
     # check if channel webhook exists in local database
     direc = os.listdir("./webhook-data/")
     for file in direc:
