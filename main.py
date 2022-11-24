@@ -85,18 +85,66 @@ async def register(ctx, name:str, brackets:str):
     appendProxy.close()
     await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `u.proxy send {1} I'm a proxy!`".format(name, brackets))
 
+@proxy.command(description="delete a proxy")
+async def remove(ctx, name:str):
+    global editedLine
+    editedLine = 0
+    try:
+        with open("./user-data/{0}.csv".format(ctx.message.author.id)) as f:
+            csv_reader = csv.reader(f, delimiter=',')
+            for line in csv_reader:
+                if line[1] == name:
+                    break
+                editedLine = editedLine + 1
+            else:
+                raise EOFError()
+    except IOError:
+            await ctx.send(":x: *I could not find your user database file. Has it been initialized?*")
+            return
+    except EOFError:
+            await ctx.send(":x: *I could not find a proxy with that name in your user database file. Has it been registered yet?*")
+            return
+
+    f = open("./user-data/{0}.csv".format(ctx.message.author.id), 'r')
+    filesaver = f.readlines()
+    filesaver[editedLine] = ""
+    f.close()
+
+    x = open("./user-data/{0}.csv".format(ctx.message.author.id), 'w')
+    x.writelines(filesaver)
+    x.close()
+
+    await ctx.send(":white_check_mark: {0} has been removed from your proxy list.".format(name))
+
+
 @proxy.command(description="set a proxy's avatar")
 async def avatar(ctx, name:str):
+    global line
+    line = ""
     try:
         avatar = ctx.message.attachments[0]
     except:
-        await ctx.send(":x: *No image was provided.*")
-        return
+        try:
+            with open("./user-data/{0}.csv".format(ctx.message.author.id)) as f:
+                csv_reader = csv.reader(f, delimiter=',')
+                for line in csv_reader:
+                    if line[1] == name:
+                        if line[1] == "*":
+                            await ctx.send(":x: *This proxy doesn't have an avatar.*")
+                        else:
+                            await ctx.send(line[2])
+                        return
+                else:
+                    raise EOFError()
+        except IOError:
+            await ctx.send(":x: *I could not find your user database file. Has it been initialized?*")
+            return
+        except EOFError:
+            await ctx.send(":x: *I could not find a proxy with that name in your user database file. Has it been registered yet?*")
+            return
     
     global editedLine
-    global line
     editedLine = 0
-    line = ""
 
     try:
         with open("./user-data/{0}.csv".format(ctx.message.author.id)) as f:
