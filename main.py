@@ -129,7 +129,7 @@ async def avatar(ctx, name:str):
                 csv_reader = csv.reader(f, delimiter=',')
                 for line in csv_reader:
                     if line[1] == name:
-                        if line[1] == "*":
+                        if line[2] == "*":
                             await ctx.send(":x: *This proxy doesn't have an avatar.*")
                         else:
                             await ctx.send(line[2])
