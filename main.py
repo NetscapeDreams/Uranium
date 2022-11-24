@@ -39,6 +39,8 @@ async def on_ready():
     game = discord.Game("with proxies! | u.help")
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
+# await uranium.process_commands(message)
+
 @uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
@@ -80,6 +82,16 @@ async def proxy(ctx):
 
 @proxy.command(description="register proxy")
 async def register(ctx, name:str, brackets:str):
+    if "," in name:
+        await ctx.send(":x: *Commas are not allowed in proxy names.*")
+        return
+    if "," in brackets:
+        await ctx.send(":x: *Commas are not allowed in proxy brackets.*")
+        return
+
+    if len(name) > 80:
+        await ctx.send(":x: *Your proxy's name is too long, please keep it equal to or under 80 characters.*")
+        return
     appendProxy = open("./user-data/{0}.csv".format(ctx.message.author.id), "a")
     appendProxy.write("{0},{1},*\n".format(brackets, name))
     appendProxy.close()
