@@ -1,5 +1,7 @@
 import discord
 import os
+import re
+from random import randint
 from discord.ext import commands
 from discord import Webhook
 
@@ -153,10 +155,36 @@ async def send(ctx, brackets:str, *, msg):
             except:
                 return
             await ctx.message.delete()
+
+            detectDiceRoll = re.compile("\{\{.*\}\}")
+            if detectDiceRoll.search(msg):
+                res = re.findall(r"\{\{.*?\}\}", msg)
+                originalres = res[0]
+                res[0] = res[0].replace('{{', '')
+                res[0] = res[0].replace('}}', '')
+
+                # 1d6 + 10
+                # how many times rolled * sides of die, result is random + extra number?
+
+                separateDie = res[0].split('d')
+                if not separateDie[0]:
+                    separateDie[0] = 1
+                separateExtra = separateDie[1].split('+')
+                separateExtra.append(0)
+                numberz = [int(separateDie[0]), int(separateExtra[0]), int(separateExtra[1])]
+                result = []
+                for die in range(numberz[0]):
+                    die = randint(1, numberz[1])
+                    result.append(die)
+
+            msg = msg.replace(originalres, "`🎲{0}`".format(sum(result, numberz[2])))
+
             if avtr == "*":
                 await wh.send(msg, username=name)
+                await ctx.send("**{0}**\n{1} + {2} -> {3}".format(res[0], result, numberz[2], sum(result, numberz[2])))
             else:
                 await wh.send(msg, username=name, avatar_url=avtr)
+                await ctx.send("**{0}**\n{1} + {2} -> {3}".format(res[0], result, numberz[2], sum(result, numberz[2])))
             
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
