@@ -1,8 +1,10 @@
 import discord
 import os
-import csv
 from discord.ext import commands
 from discord import Webhook
+
+# import tsv editing commands
+from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar
 
 # YOU MUST SET THESE OPTIONS IF YOU ARE MODIFYING THIS CODE AND HOSTING IT!!!!
 # As according to the GNU Affero General Public License version 3, network use of this application counts as DISTRIBUTION.
@@ -92,88 +94,16 @@ async def register(ctx, name:str, brackets:str):
 
 @proxy.command(description="delete a proxy")
 async def remove(ctx, name:str):
-    global editedLine
-    editedLine = 0
-    try:
-        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
-            csv_reader = csv.reader(f, delimiter='\t')
-            for line in csv_reader:
-                if line[1] == name:
-                    break
-                editedLine = editedLine + 1
-            else:
-                raise EOFError()
-    except IOError:
-            await ctx.send(":x: *I could not find your user database file. Has it been initialized?*")
-            return
-    except EOFError:
-            await ctx.send(":x: *I could not find a proxy with that name in your user database file. Has it been registered yet?*")
-            return
-
-    f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
-    filesaver = f.readlines()
-    filesaver[editedLine] = ""
-    f.close()
-
-    x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
-    x.writelines(filesaver)
-    x.close()
-
-    await ctx.send(":white_check_mark: {0} has been removed from your proxy list.".format(name))
-
+    await removeProxy(ctx, name)
 
 @proxy.command(description="set a proxy's avatar")
 async def avatar(ctx, name:str):
-    global line
-    line = ""
     try:
         avatar = ctx.message.attachments[0]
     except:
-        try:
-            with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
-                csv_reader = csv.reader(f, delimiter='\t')
-                for line in csv_reader:
-                    if line[1] == name:
-                        if line[2] == "*":
-                            await ctx.send(":x: *This proxy doesn't have an avatar.*")
-                        else:
-                            await ctx.send(line[2])
-                        return
-                else:
-                    raise EOFError()
-        except IOError:
-            await ctx.send(":x: *I could not find your user database file. Has it been initialized?*")
-            return
-        except EOFError:
-            await ctx.send(":x: *I could not find a proxy with that name in your user database file. Has it been registered yet?*")
-            return
+        await getProxyAvatar(ctx, name)
     
-    global editedLine
-    editedLine = 0
-
-    try:
-        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
-            csv_reader = csv.reader(f, delimiter='\t')
-            for line in csv_reader:
-                if line[1] == name:
-                    break
-                editedLine = editedLine + 1
-            else:
-                raise EOFError()
-        f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
-        filesaver = f.readlines()
-        filesaver[editedLine] = "{0}\t{1}\t{2}\n".format(line[0], line[1], avatar.url)
-        f.close()
-
-        x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
-        x.writelines(filesaver)
-        x.close()
-
-        await ctx.send(":white_check_mark: *Avatar successfully saved.*\nPlease note, if the image you specified gets deleted, then your proxy's avatar will no longer work.")
-    except IOError:
-        await ctx.send(":x: *I could not find your user database file. Has it been initialized?*")
-    except EOFError:
-        await ctx.send(":x: *I could not find a proxy with that name in your user database file. Has it been registered yet?*")
+    await setProxyAvatar(ctx, name, avatar)
 
 @proxy.command(description="mainly for debugging", aliases=["whs"])
 async def webhookstatus(ctx):
@@ -218,14 +148,10 @@ async def send(ctx, brackets:str, *, msg):
     webhookList = await ctx.message.channel.webhooks()
     for wh in webhookList:
         if str(webhookID) == str(wh):
-            with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
-                csv_reader = csv.reader(f, delimiter='\t')
-                for line in csv_reader:
-                    if line[0] == brackets:
-                        name = line[1]
-                        avtr = line[2]
-                else:
-                    return
+            try:
+                name, avtr = parseProxy(ctx, brackets)
+            except:
+                return
             await ctx.message.delete()
             if avtr == "*":
                 await wh.send(msg, username=name)
