@@ -58,7 +58,7 @@ async def about(ctx):
 # all this does is create an empty CSV file for storing user proxy information.
 @uranium.group(invoke_without_command=True)
 async def init(ctx):
-    databasePath = "./user-data/{0}.csv".format(ctx.message.author.id)
+    databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
     databaseExists = os.path.exists(databasePath)
     if databaseExists == True:
         await ctx.send(":x: *Your database is already initialized, and exists.*\nIf you would like to initialize it again, **deleting all of your proxies and settings**, please do `u.init confirm`.")
@@ -69,7 +69,7 @@ async def init(ctx):
 
 @init.command()
 async def confirm(ctx):
-    databasePath = "./user-data/{0}.csv".format(ctx.message.author.id)
+    databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
     os.remove(databasePath)
     databaseCreation = open(databasePath, "w")
     databaseCreation.close()
@@ -82,18 +82,11 @@ async def proxy(ctx):
 
 @proxy.command(description="register proxy")
 async def register(ctx, name:str, brackets:str):
-    if "," in name:
-        await ctx.send(":x: *Commas are not allowed in proxy names.*")
-        return
-    if "," in brackets:
-        await ctx.send(":x: *Commas are not allowed in proxy brackets.*")
-        return
-
     if len(name) > 80:
         await ctx.send(":x: *Your proxy's name is too long, please keep it equal to or under 80 characters.*")
         return
-    appendProxy = open("./user-data/{0}.csv".format(ctx.message.author.id), "a")
-    appendProxy.write("{0},{1},*\n".format(brackets, name))
+    appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
+    appendProxy.write("{0}\t{1}\t*\n".format(brackets, name))
     appendProxy.close()
     await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `u.proxy send {1} I'm a proxy!`".format(name, brackets))
 
@@ -102,8 +95,8 @@ async def remove(ctx, name:str):
     global editedLine
     editedLine = 0
     try:
-        with open("./user-data/{0}.csv".format(ctx.message.author.id)) as f:
-            csv_reader = csv.reader(f, delimiter=',')
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+            csv_reader = csv.reader(f, delimiter='\t')
             for line in csv_reader:
                 if line[1] == name:
                     break
@@ -117,12 +110,12 @@ async def remove(ctx, name:str):
             await ctx.send(":x: *I could not find a proxy with that name in your user database file. Has it been registered yet?*")
             return
 
-    f = open("./user-data/{0}.csv".format(ctx.message.author.id), 'r')
+    f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
     filesaver = f.readlines()
     filesaver[editedLine] = ""
     f.close()
 
-    x = open("./user-data/{0}.csv".format(ctx.message.author.id), 'w')
+    x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
     x.writelines(filesaver)
     x.close()
 
@@ -137,8 +130,8 @@ async def avatar(ctx, name:str):
         avatar = ctx.message.attachments[0]
     except:
         try:
-            with open("./user-data/{0}.csv".format(ctx.message.author.id)) as f:
-                csv_reader = csv.reader(f, delimiter=',')
+            with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+                csv_reader = csv.reader(f, delimiter='\t')
                 for line in csv_reader:
                     if line[1] == name:
                         if line[2] == "*":
@@ -159,20 +152,20 @@ async def avatar(ctx, name:str):
     editedLine = 0
 
     try:
-        with open("./user-data/{0}.csv".format(ctx.message.author.id)) as f:
-            csv_reader = csv.reader(f, delimiter=',')
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+            csv_reader = csv.reader(f, delimiter='\t')
             for line in csv_reader:
                 if line[1] == name:
                     break
                 editedLine = editedLine + 1
             else:
                 raise EOFError()
-        f = open("./user-data/{0}.csv".format(ctx.message.author.id), 'r')
+        f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
         filesaver = f.readlines()
-        filesaver[editedLine] = "{0},{1},{2}\n".format(line[0], line[1], avatar.url)
+        filesaver[editedLine] = "{0}\t{1}\t{2}\n".format(line[0], line[1], avatar.url)
         f.close()
 
-        x = open("./user-data/{0}.csv".format(ctx.message.author.id), 'w')
+        x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
         x.writelines(filesaver)
         x.close()
 
@@ -225,12 +218,14 @@ async def send(ctx, brackets:str, *, msg):
     webhookList = await ctx.message.channel.webhooks()
     for wh in webhookList:
         if str(webhookID) == str(wh):
-            with open("./user-data/{0}.csv".format(ctx.message.author.id)) as f:
-                csv_reader = csv.reader(f, delimiter=',')
+            with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+                csv_reader = csv.reader(f, delimiter='\t')
                 for line in csv_reader:
                     if line[0] == brackets:
                         name = line[1]
                         avtr = line[2]
+                else:
+                    return
             await ctx.message.delete()
             if avtr == "*":
                 await wh.send(msg, username=name)
