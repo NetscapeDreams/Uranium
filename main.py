@@ -34,7 +34,28 @@ print("[URANIUM] Webhook data directory exists.")
 intents = discord.Intents.default()
 intents.message_content = True
 
-uranium = commands.Bot(command_prefix="u.", intents=intents)
+prefixes = "u.", "U."
+
+async def obtainWebhookData(ctx, channelID):
+    # check if channel webhook exists in local database
+    direc = os.listdir("./webhook-data/")
+    for file in direc:
+        if str(channelID) in file:
+            webhookRead = open("./webhook-data/{0}".format(str(channelID), "r"))
+            webhookID = webhookRead.read()
+            webhookRead.close()
+            return webhookID
+    # if not, create and store it
+    else:
+        channel = uranium.get_channel(int(channelID))
+        webhookID = await channel.create_webhook(name="Uranium Proxy Webhook")
+        webhookPath = "./webhook-data/{0}".format(str(channelID))
+        webhookStore = open(webhookPath, "w")
+        webhookStore.write(str(webhookID))
+        webhookStore.close()
+        return webhookID
+
+uranium = commands.Bot(command_prefix=prefixes, intents=intents)
 
 @uranium.event
 async def on_ready():
@@ -131,23 +152,31 @@ async def webhookstatus(ctx):
 
 @proxy.command(aliases=["s"])
 async def send(ctx, brackets:str, *, msg):
-    # check if channel webhook exists in local database
-    direc = os.listdir("./webhook-data/")
-    for file in direc:
-        if str(ctx.channel.id) in file:
-            webhookRead = open("./webhook-data/{0}".format(str(ctx.channel.id), "r"))
-            webhookID = webhookRead.read()
-            webhookRead.close()
-            break
-    # if not, create and store it
-    else:
-        webhookID = await ctx.channel.create_webhook(name="Uranium Proxy Webhook")
-        webhookPath = "./webhook-data/{0}".format(str(ctx.channel.id))
-        webhookStore = open(webhookPath, "w")
-        webhookStore.write(str(webhookID))
-        webhookStore.close()
+    redirect = False
+    detectRedirect = re.compile("\{\{.*\}\}")
+    if detectRedirect.search(msg):
+        res = re.findall(r"\{\{.*?\}\}", msg)
+        originalres = res[0]
+        res[0] = res[0].replace('{{', '')
+        res[0] = res[0].replace('}}', '')
 
-    webhookList = await ctx.message.channel.webhooks()
+        if res[0].startswith("<#"):
+            urghID = re.sub("\D", " ", res[0]);
+            channelID = re.sub("\s", "", urghID);
+            webhookID = await obtainWebhookData(ctx, channelID)
+            msg = msg.replace(originalres, "")
+            redirect = True
+        else:
+            webhookID = await obtainWebhookData(ctx, ctx.channel.id)
+    else:
+        webhookID = await obtainWebhookData(ctx, ctx.channel.id)
+
+    if redirect == True:
+        channel = uranium.get_channel(int(channelID))
+        webhookList = await channel.webhooks()
+    else:
+        webhookList = await ctx.message.channel.webhooks()
+
     for wh in webhookList:
         if str(webhookID) == str(wh):
             try:
@@ -156,15 +185,12 @@ async def send(ctx, brackets:str, *, msg):
                 return
             await ctx.message.delete()
 
-            detectDiceRoll = re.compile("\{\{.*\}\}")
-            if detectDiceRoll.search(msg):
+            detectCommand = re.compile("\{\{.*\}\}")
+            if detectCommand.search(msg):
                 res = re.findall(r"\{\{.*?\}\}", msg)
                 originalres = res[0]
                 res[0] = res[0].replace('{{', '')
                 res[0] = res[0].replace('}}', '')
-
-                # 1d6 + 10
-                # how many times rolled * sides of die, result is random + extra number?
 
                 separateDie = res[0].split('d')
                 if not separateDie[0]:
@@ -177,17 +203,30 @@ async def send(ctx, brackets:str, *, msg):
                     die = randint(1, numberz[1])
                     result.append(die)
 
-            msg = msg.replace(originalres, "`🎲{0}`".format(sum(result, numberz[2])))
+                msg = msg.replace(originalres, "`🎲{0}`".format(sum(result, numberz[2])))
+
+                embedVar = discord.Embed(
+                title=res[0], description="{1} + {2} → **{3}**".format(res[0], result, numberz[2], sum(result, numberz[2])), color=0x20FD00
+                        )
+
+                if avtr == "*":
+                    await wh.send(msg, username=name, embed=embedVar)
+                else:
+                    await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar)
+                return
 
             if avtr == "*":
                 await wh.send(msg, username=name)
-                await ctx.send("**{0}**\n{1} + {2} -> {3}".format(res[0], result, numberz[2], sum(result, numberz[2])))
             else:
                 await wh.send(msg, username=name, avatar_url=avtr)
-                await ctx.send("**{0}**\n{1} + {2} -> {3}".format(res[0], result, numberz[2], sum(result, numberz[2])))
             
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
+
+@uranium.command()
+@commands.is_owner()
+async def execute(ctx, *, com):
+    exec(com)
 
 f = open("token", "r")
 token = f.read()
