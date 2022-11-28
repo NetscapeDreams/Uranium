@@ -34,7 +34,7 @@ print("[URANIUM] Webhook data directory exists.")
 intents = discord.Intents.default()
 intents.message_content = True
 
-prefixes = "u.", "U."
+prefixes = "np.", "Np."
 
 async def obtainWebhookData(ctx, channelID):
     # check if channel webhook exists in local database
@@ -48,7 +48,7 @@ async def obtainWebhookData(ctx, channelID):
     # if not, create and store it
     else:
         channel = uranium.get_channel(int(channelID))
-        webhookID = await channel.create_webhook(name="Uranium Proxy Webhook")
+        webhookID = await channel.create_webhook(name="Neptunium Proxy Webhook")
         webhookPath = "./webhook-data/{0}".format(str(channelID))
         webhookStore = open(webhookPath, "w")
         webhookStore.write(str(webhookID))
@@ -69,13 +69,13 @@ async def on_ready():
 @uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
-    title="About Uranium", description="Uranium is a Discord bot that is used for roleplay and for use in systems/plurality.", color=0x20FD00
+    title="About Neptunium", description="Neptunium is a Discord bot that is used for roleplay and for use in systems/plurality.", color=0x00fff4
             )
     if modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
     embedVar.set_footer(text="Created by BurningInfern0.")
-    embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/203663460-6863d8e6-66d8-4379-8fe9-aba48de15262.png")
-    embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own Uranium instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.", inline=False)
+    embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/204309975-8b937ad8-99c1-40f1-a373-ce692873fada.png")
+    embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own Neptunium instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.", inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
     embedVar.add_field(name="Repository Link", value=respositoryLink, inline=False)
     await ctx.send(embed=embedVar)
@@ -227,6 +227,13 @@ async def send(ctx, brackets:str, *, msg):
 @commands.is_owner()
 async def execute(ctx, *, com):
     exec(com)
+
+@uranium.command()
+async def export(ctx):
+    try:
+        await ctx.send(file=discord.File(r'./user-data/{0}.tsv'.format(ctx.author.id)))
+    except:
+        await ctx.send(":x: *I'm sorry, an error occurred, please try again later.*")
 
 f = open("token", "r")
 token = f.read()
