@@ -8,13 +8,8 @@ from discord import Webhook
 # import tsv editing commands
 from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar
 
-# YOU MUST SET THESE OPTIONS IF YOU ARE MODIFYING THIS CODE AND HOSTING IT!!!!
-# As according to the GNU Affero General Public License version 3, network use of this application counts as DISTRIBUTION.
-# If distribution occurs, you MUST disclose the source code in a PUBLIC repository where your changes to the code are STATED, and must follow and include the same license as the GNU AGPL v3.
-modified = False
-respositoryLink = "https://github.com/BurningInfern0/Uranium"
-
 # initialization
+import settings
 try:
     f = open("token", "r")
     tokenTest = f.read()
@@ -33,8 +28,6 @@ print("[URANIUM] Webhook data directory exists.")
 
 intents = discord.Intents.default()
 intents.message_content = True
-
-prefixes = "u.", "U."
 
 async def obtainWebhookData(ctx, channelID):
     # check if channel webhook exists in local database
@@ -55,13 +48,13 @@ async def obtainWebhookData(ctx, channelID):
         webhookStore.close()
         return webhookID
 
-uranium = commands.Bot(command_prefix=prefixes, intents=intents)
+uranium = commands.Bot(command_prefix=settings.prefixes, intents=intents)
 
 @uranium.event
 async def on_ready():
     print(f'[URANIUM] I have logged in as {uranium.user}!')
     
-    game = discord.Game("with proxies! | u.help")
+    game = discord.Game("with proxies! | {0}help".format(settings.prefixes[0]))
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
 # await uranium.process_commands(message)
@@ -69,30 +62,27 @@ async def on_ready():
 @uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
-    title="About Uranium", description="Uranium is a Discord bot that is used for roleplay and for use in systems/plurality.", color=0x20FD00
+    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0x00fff4
             )
-    if modified == True:
+    if settings.modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
     embedVar.set_footer(text="Created by BurningInfern0.")
     embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/203663460-6863d8e6-66d8-4379-8fe9-aba48de15262.png")
-    embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own Uranium instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.", inline=False)
+    embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(settings.botName), inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
-    embedVar.add_field(name="Repository Link", value=respositoryLink, inline=False)
+    embedVar.add_field(name="Repository Link", value=settings.respositoryLink, inline=False)
     await ctx.send(embed=embedVar)
 
-# all this does is create an empty CSV file for storing user proxy information.
 @uranium.group(invoke_without_command=True)
-async def init(ctx):
+async def reinit(ctx):
     databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
     databaseExists = os.path.exists(databasePath)
     if databaseExists == True:
-        await ctx.send(":x: *Your database is already initialized, and exists.*\nIf you would like to initialize it again, **deleting all of your proxies and settings**, please do `u.init confirm`.")
+        await ctx.send(":grey_exclamation: *A database under your user ID has been found.*\nIf you would like to re-initalize it, this will **delete all of your current proxies and settings**.\n*Please note that you can export your user data via `{0}export` if you would like to.*\nIf you are sure you want to do this, please do `{0}reinit confirm`.".format(settings.prefixes[0]))
     else:
-        databaseCreation = open(databasePath, "w")
-        databaseCreation.close()
-        await ctx.send(":white_check_mark: *Your database has been created and initialized. You can now create proxies.*")
+        await ctx.send(":x: *There is nothing to re-initialize.*")
 
-@init.command()
+@reinit.command()
 async def confirm(ctx):
     databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
     os.remove(databasePath)
@@ -103,17 +93,24 @@ async def confirm(ctx):
 
 @uranium.group(invoke_without_command=True, aliases=["p"])
 async def proxy(ctx):
-    await ctx.send(":x: *Please provide a subcommand.*\nWhat do you want me to do with proxies? See `u.help proxy` for more information.")
+    await ctx.send(":x: *Please provide a subcommand.*\nWhat do you want me to do with proxies? See `{0}help proxy` for more information.".format(settings.prefixes[0]))
 
 @proxy.command(description="register proxy")
 async def register(ctx, name:str, brackets:str):
     if len(name) > 80:
         await ctx.send(":x: *Your proxy's name is too long, please keep it equal to or under 80 characters.*")
         return
+
+    try:
+        avatar = ctx.message.attachments[0]
+        proxyAvatar = avatar.url
+    except:
+        proxyAvatar = "*"
+
     appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
-    appendProxy.write("{0}\t{1}\t*\n".format(brackets, name))
+    appendProxy.write("{0}\t{1}\t{2}\n".format(brackets, name, proxyAvatar))
     appendProxy.close()
-    await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `u.proxy send {1} I'm a proxy!`".format(name, brackets))
+    await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `{2}proxy send {1} I'm a proxy!`".format(name, brackets, settings.prefixes[0]))
 
 @proxy.command(description="delete a proxy")
 async def remove(ctx, name:str):
@@ -227,6 +224,33 @@ async def send(ctx, brackets:str, *, msg):
 @commands.is_owner()
 async def execute(ctx, *, com):
     exec(com)
+
+@uranium.command()
+async def export(ctx):
+    try:
+        if os.stat('./user-data/{0}.tsv'.format(ctx.author.id)).st_size == 0:
+            await ctx.send(":x: *Why would I send a blank user data file?*")
+        else:
+            dmChannel = await ctx.author.create_dm()
+            try:
+                await dmChannel.send("**Hi, {0}!** :wave:\nHere is your user data file you requested.\nOh, and please note: user data importing is not supported at the moment, so all you can really do is view your data. Sorry :(".format(ctx.author.name), file=discord.File(r'./user-data/{0}.tsv'.format(ctx.author.id)))
+                await ctx.message.add_reaction("✅")
+            except discord.errors.Forbidden:
+                await ctx.send(":x: *I was not able to message you, please allow server DMs so that I can send your user data file privately.*")
+    except FileNotFoundError:
+        await ctx.send(":x: *I could not find a user data file with your user ID. I think you should create your file first before exporting it.*")
+
+@uranium.command()
+async def data(ctx):
+    embedVar = discord.Embed(
+    title="{0} and your data.".format(botName), description="What does {0} exactly do with data it obtains?".format(botName), color=0x00fff4
+            )
+    embedVar.set_footer(text="Last updated November 30th, 2022.")
+    embedVar.add_field(name="User data", value="This bot stores your user ID (this is to help identify which file belongs to who) and the proxies you create via the information you provide.\nThis information is exportable via the bot's export command.", inline=False)
+    embedVar.add_field(name="Webhook data", value="This bot stores webhook ID data under a channel ID filename, to help keep a local value for comparison to send proxies via webhooks.", inline=False)
+    embedVar.add_field(name="Channel data", value="This bot stores channel IDs as filenames for help in identifying the webhook ID for the channel you are sending the proxy to.", inline=False)
+    embedVar.add_field(name="Who can see this data?", value="It depends. All information can only be read by the bot host(s), with the exception of user data, which can be viewed at the user's request.", inline=False)
+    await ctx.send(embed=embedVar)
 
 f = open("token", "r")
 token = f.read()

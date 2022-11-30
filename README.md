@@ -12,14 +12,14 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
     * `u.proxy avatar`
 * Sending proxy messages
     * `u.proxy send`
-* Creating a user database
-    * `u.init`
 * Purging all data
-    * `u.init confirm`
+    * `u.reinit`
 * Proxy Dice Rolls
     * `u.proxy send Logan I cast fireball for {{2d6+5}} damage!`
 * Redirecting proxy messages to different channels
     * `u.proxy send Logan {{#channel}} hey, i'm being sent into a different channel!`
+* Exporting user data
+    * `u.export`
 
 ## What is not possible as of now?
 * Changing proxy names or brackets
@@ -31,12 +31,15 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
 * Listing your current proxies (with or without groups) and listing specific proxy information
 * Finding proxies
 * Proxy groups
-* Importing and exporting user data
+* Importing user data
 * Autoproxy
 * Privacy settings
 * Multiproxies
 * Slash commands
 * Server specific settings
+    * Specific prefixes per server
+    * Logging
+    * Channel-specific permissions
 * Editing proxy messages
 * Showing information about a proxy message
 * Reactions on messages
@@ -45,6 +48,7 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
     * Questiom mark for proxy information
 * Sending images or files under a proxy
 * Proxies in Threads or Forums
+* Replying using proxies
 
 ## Permissions
 
