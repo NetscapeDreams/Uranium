@@ -37,6 +37,9 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
 * Multiproxies
 * Slash commands
 * Server specific settings
+    * Specific prefixes per server
+    * Logging
+    * Channel-specific permissions
 * Editing proxy messages
 * Showing information about a proxy message
 * Reactions on messages

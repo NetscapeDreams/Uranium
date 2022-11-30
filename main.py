@@ -251,6 +251,18 @@ async def export(ctx):
     except FileNotFoundError:
         await ctx.send(":x: *I could not find a user data file with your user ID. I think you should create your file first before exporting it.*")
 
+@uranium.command()
+async def data(ctx):
+    embedVar = discord.Embed(
+    title="{0} and your data.".format(botName), description="What does {0} exactly do with data it obtains?".format(botName), color=0x00fff4
+            )
+    embedVar.set_footer(text="Last updated November 30th, 2022.")
+    embedVar.add_field(name="User data", value="This bot stores your user ID (this is to help identify which file belongs to who) and the proxies you create via the information you provide.\nThis information is exportable via the bot's export command.", inline=False)
+    embedVar.add_field(name="Webhook data", value="This bot stores webhook ID data under a channel ID filename, to help keep a local value for comparison to send proxies via webhooks.", inline=False)
+    embedVar.add_field(name="Channel data", value="This bot stores channel IDs as filenames for help in identifying the webhook ID for the channel you are sending the proxy to.", inline=False)
+    embedVar.add_field(name="Who can see this data?", value="It depends. All information can only be read by the bot host(s), with the exception of user data, which can be viewed at the user's request.", inline=False)
+    await ctx.send(embed=embedVar)
+
 f = open("token", "r")
 token = f.read()
 uranium.run(token)
