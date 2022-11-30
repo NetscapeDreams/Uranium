@@ -61,7 +61,7 @@ uranium = commands.Bot(command_prefix=prefixes, intents=intents)
 async def on_ready():
     print(f'[URANIUM] I have logged in as {uranium.user}!')
     
-    game = discord.Game("with proxies! | u.help")
+    game = discord.Game("with proxies! | np.help")
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
 # await uranium.process_commands(message)
@@ -231,9 +231,17 @@ async def execute(ctx, *, com):
 @uranium.command()
 async def export(ctx):
     try:
-        await ctx.send(file=discord.File(r'./user-data/{0}.tsv'.format(ctx.author.id)))
-    except:
-        await ctx.send(":x: *I'm sorry, an error occurred, please try again later.*")
+        if os.stat('./user-data/{0}.tsv'.format(ctx.author.id)).st_size == 0:
+            await ctx.send(":x: *Why would I send a blank user data file?*")
+        else:
+            dmChannel = await ctx.author.create_dm()
+            try:
+                await dmChannel.send("**Hi, {0}!** :wave:\nHere is your user data file you requested.\nOh, and please note: user data importing is not supported at the moment, so all you can really do is view your data. Sorry :(".format(ctx.author.name), file=discord.File(r'./user-data/{0}.tsv'.format(ctx.author.id)))
+                await ctx.message.add_reaction("✅")
+            except discord.errors.Forbidden:
+                await ctx.send(":x: *I was not able to message you, please allow server DMs so that I can send your user data file privately.*")
+    except FileNotFoundError:
+        await ctx.send(":x: *I could not find a user data file with your user ID. I think you should create your file first before exporting it.*")
 
 f = open("token", "r")
 token = f.read()
