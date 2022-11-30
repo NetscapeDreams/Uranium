@@ -67,7 +67,7 @@ async def about(ctx):
     if settings.modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
     embedVar.set_footer(text="Created by BurningInfern0.")
-    embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/204309975-8b937ad8-99c1-40f1-a373-ce692873fada.png")
+    embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/203663460-6863d8e6-66d8-4379-8fe9-aba48de15262.png")
     embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(settings.botName), inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
     embedVar.add_field(name="Repository Link", value=settings.respositoryLink, inline=False)
