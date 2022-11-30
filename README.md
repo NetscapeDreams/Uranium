@@ -12,10 +12,8 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
     * `u.proxy avatar`
 * Sending proxy messages
     * `u.proxy send`
-* Creating a user database
-    * `u.init`
 * Purging all data
-    * `u.init confirm`
+    * `u.reinit`
 * Proxy Dice Rolls
     * `u.proxy send Logan I cast fireball for {{2d6+5}} damage!`
 * Redirecting proxy messages to different channels
@@ -47,6 +45,7 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
     * Questiom mark for proxy information
 * Sending images or files under a proxy
 * Proxies in Threads or Forums
+* Replying using proxies
 
 ## Permissions
 
