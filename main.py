@@ -41,7 +41,7 @@ async def obtainWebhookData(ctx, channelID):
     # if not, create and store it
     else:
         channel = uranium.get_channel(int(channelID))
-        webhookID = await channel.create_webhook(name="Neptunium Proxy Webhook")
+        webhookID = await channel.create_webhook(name="Uranium Proxy Webhook")
         webhookPath = "./webhook-data/{0}".format(str(channelID))
         webhookStore = open(webhookPath, "w")
         webhookStore.write(str(webhookID))
