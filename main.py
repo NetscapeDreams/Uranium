@@ -8,19 +8,8 @@ from discord import Webhook
 # import tsv editing commands
 from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar
 
-# YOU MUST SET THESE OPTIONS IF YOU ARE MODIFYING THIS CODE AND HOSTING IT!!!!
-# As according to the GNU Affero General Public License version 3, network use of this application counts as DISTRIBUTION.
-# If distribution occurs, you MUST disclose the source code in a PUBLIC repository where your changes to the code are STATED, and must follow and include the same license as the GNU AGPL v3.
-modified = False
-respositoryLink = "https://github.com/BurningInfern0/Uranium"
-
-# please keep this in an array
-prefixes = ["np.", "Np."]
-
-# mainly for the about section
-botName = "Neptunium"
-
 # initialization
+import settings
 try:
     f = open("token", "r")
     tokenTest = f.read()
@@ -59,13 +48,13 @@ async def obtainWebhookData(ctx, channelID):
         webhookStore.close()
         return webhookID
 
-uranium = commands.Bot(command_prefix=prefixes, intents=intents)
+uranium = commands.Bot(command_prefix=settings.prefixes, intents=intents)
 
 @uranium.event
 async def on_ready():
     print(f'[URANIUM] I have logged in as {uranium.user}!')
     
-    game = discord.Game("with proxies! | {0}help".format(prefixes[0]))
+    game = discord.Game("with proxies! | {0}help".format(settings.prefixes[0]))
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
 # await uranium.process_commands(message)
@@ -73,15 +62,15 @@ async def on_ready():
 @uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
-    title="About {0}".format(botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(botName), color=0x00fff4
+    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0x00fff4
             )
-    if modified == True:
+    if settings.modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
     embedVar.set_footer(text="Created by BurningInfern0.")
     embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/204309975-8b937ad8-99c1-40f1-a373-ce692873fada.png")
-    embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(botName), inline=False)
+    embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(settings.botName), inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
-    embedVar.add_field(name="Repository Link", value=respositoryLink, inline=False)
+    embedVar.add_field(name="Repository Link", value=settings.respositoryLink, inline=False)
     await ctx.send(embed=embedVar)
 
 @uranium.group(invoke_without_command=True)
@@ -89,7 +78,7 @@ async def reinit(ctx):
     databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
     databaseExists = os.path.exists(databasePath)
     if databaseExists == True:
-        await ctx.send(":grey_exclamation: *A database under your user ID has been found.*\nIf you would like to re-initalize it, this will **delete all of your current proxies and settings**.\n*Please note that you can export your user data via `{0}export` if you would like to.*\nIf you are sure you want to do this, please do `{0}reinit confirm`.".format(prefixes[0]))
+        await ctx.send(":grey_exclamation: *A database under your user ID has been found.*\nIf you would like to re-initalize it, this will **delete all of your current proxies and settings**.\n*Please note that you can export your user data via `{0}export` if you would like to.*\nIf you are sure you want to do this, please do `{0}reinit confirm`.".format(settings.prefixes[0]))
     else:
         await ctx.send(":x: *There is nothing to re-initialize.*")
 
@@ -104,7 +93,7 @@ async def confirm(ctx):
 
 @uranium.group(invoke_without_command=True, aliases=["p"])
 async def proxy(ctx):
-    await ctx.send(":x: *Please provide a subcommand.*\nWhat do you want me to do with proxies? See `{0}help proxy` for more information.".format(prefixes[0]))
+    await ctx.send(":x: *Please provide a subcommand.*\nWhat do you want me to do with proxies? See `{0}help proxy` for more information.".format(settings.prefixes[0]))
 
 @proxy.command(description="register proxy")
 async def register(ctx, name:str, brackets:str):
@@ -121,7 +110,7 @@ async def register(ctx, name:str, brackets:str):
     appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
     appendProxy.write("{0}\t{1}\t{2}\n".format(brackets, name, proxyAvatar))
     appendProxy.close()
-    await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `{2}proxy send {1} I'm a proxy!`".format(name, brackets, prefixes[0]))
+    await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `{2}proxy send {1} I'm a proxy!`".format(name, brackets, settings.prefixes[0]))
 
 @proxy.command(description="delete a proxy")
 async def remove(ctx, name:str):
