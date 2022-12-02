@@ -149,6 +149,16 @@ async def webhookstatus(ctx):
 
 @proxy.command(aliases=["s"])
 async def send(ctx, brackets:str, *, msg):
+
+    # attempt to detect if sending channel is a thread
+    try:
+        # thread channels have a parent_id attribute
+        detectThread = ctx.channel.parent_id
+    except:
+        detectThread = False
+    else:
+        detectThread = True
+
     redirect = False
     detectRedirect = re.compile("\{\{.*\}\}")
     if detectRedirect.search(msg):
@@ -160,22 +170,34 @@ async def send(ctx, brackets:str, *, msg):
         if res[0].startswith("<#"):
             urghID = re.sub("\D", " ", res[0]);
             channelID = re.sub("\s", "", urghID);
-            webhookID = await obtainWebhookData(ctx, channelID)
+            channel = uranium.get_channel(int(channelID))
+
+            try:
+                sendToThread = channel.parent_id
+            except:
+                sendToThread = False
+                webhookID = await obtainWebhookData(ctx, channel.id)
+                webhookList = await channel.webhooks()
+            else:
+                sendToThread = True
+                webhookID = await obtainWebhookData(ctx, channel.parent_id)
+                parentChannel = uranium.get_channel(int(channel.parent_id))
+                webhookList = await parentChannel.webhooks()
+
             msg = msg.replace(originalres, "")
             redirect = True
-        else:
-            webhookID = await obtainWebhookData(ctx, ctx.channel.id)
-    else:
-        webhookID = await obtainWebhookData(ctx, ctx.channel.id)
-
-    if redirect == True:
-        channel = uranium.get_channel(int(channelID))
+    
+    if detectThread == True and redirect == False:
+        webhookID = await obtainWebhookData(ctx, ctx.channel.parent_id)
+        channel = uranium.get_channel(int(ctx.channel.parent_id))
         webhookList = await channel.webhooks()
-    else:
+    elif detectThread == False and redirect == False:
+        webhookID = await obtainWebhookData(ctx, ctx.channel.id)
         webhookList = await ctx.message.channel.webhooks()
 
     for wh in webhookList:
         if str(webhookID) == str(wh):
+
             try:
                 name, avtr = parseProxy(ctx, brackets)
             except:
@@ -207,15 +229,47 @@ async def send(ctx, brackets:str, *, msg):
                         )
 
                 if avtr == "*":
-                    await wh.send(msg, username=name, embed=embedVar)
+                    if detectThread == True and redirect == False:
+                        await wh.send(msg, username=name, embed=embedVar, thread=ctx.channel)
+                    elif redirect == True:
+                        if sendToThread == True:
+                            await wh.send(msg, username=name, embed=embedVar, thread=channel)
+                        else:
+                            await wh.send(msg, username=name, embed=embedVar)
+                    else:
+                        await wh.send(msg, username=name, embed=embedVar)
                 else:
-                    await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar)
+                    if detectThread == True and redirect == False:
+                        await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar, thread=ctx.channel)
+                    elif redirect == True:
+                        if sendToThread == True:
+                            await wh.send(msg, username=name, avatar_url=avtr, thread=channel, embed=embedVar)
+                        else:
+                            await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar)
+                    else:
+                        await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar)
                 return
 
             if avtr == "*":
-                await wh.send(msg, username=name)
+                if detectThread == True and redirect == False:
+                    await wh.send(msg, username=name, thread=ctx.channel)
+                elif redirect == True:
+                    if sendToThread == True:
+                        await wh.send(msg, username=name, thread=channel)
+                    else:
+                        await wh.send(msg, username=name)
+                else:
+                    await wh.send(msg, username=name)
             else:
-                await wh.send(msg, username=name, avatar_url=avtr)
+                if detectThread == True and redirect == False:
+                    await wh.send(msg, username=name, avatar_url=avtr, thread=ctx.channel)
+                elif redirect == True:
+                    if sendToThread == True:
+                        await wh.send(msg, username=name, avatar_url=avtr, thread=channel)
+                    else:
+                        await wh.send(msg, username=name, avatar_url=avtr)
+                else:
+                    await wh.send(msg, username=name, avatar_url=avtr)
             
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
