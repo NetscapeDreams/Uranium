@@ -6,7 +6,7 @@ from discord.ext import commands
 from discord import Webhook
 
 # import tsv editing commands
-from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar
+from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar, editProxyName, editProxyBrackets
 
 # initialization
 import settings
@@ -62,11 +62,11 @@ async def on_ready():
 @uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
-    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0x00fff4
+    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0xff5e00
             )
     if settings.modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
-    embedVar.set_footer(text="Created by BurningInfern0.")
+    embedVar.set_footer(text="Created by BurningInfern0. // Plutonium Release")
     embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/203663460-6863d8e6-66d8-4379-8fe9-aba48de15262.png")
     embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(settings.botName), inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
@@ -146,6 +146,14 @@ async def webhookstatus(ctx):
                return
     except:
         await ctx.send(":x: My local webhook database did not find a match in this channel's webhook list.")
+
+@proxy.command()
+async def rename(ctx, oldname, newname):
+    await editProxyName(ctx, oldname, newname)
+
+@proxy.command()
+async def brackets(ctx, name, newbrackets):
+    await editProxyBrackets(ctx, name, newbrackets)
 
 @proxy.command(aliases=["s"])
 async def send(ctx, brackets:str, *, msg):
