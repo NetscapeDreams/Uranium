@@ -166,8 +166,8 @@ async def rename(ctx, oldname, newname):
     await editProxyName(ctx, oldname, newname)
 
 @proxy.command()
-async def brackets(ctx, name, newbrackets=False):
-    if newbrackets == False:
+async def brackets(ctx, name, newbrackets="nuthin"):
+    if newbrackets == "nuthin":
         with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
             for line in f:
                 proxy = line.split("\t")
