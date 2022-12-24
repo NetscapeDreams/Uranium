@@ -166,8 +166,15 @@ async def rename(ctx, oldname, newname):
     await editProxyName(ctx, oldname, newname)
 
 @proxy.command()
-async def brackets(ctx, name, newbrackets):
-    await editProxyBrackets(ctx, name, newbrackets)
+async def brackets(ctx, name, newbrackets=False):
+    if newbrackets == False:
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if proxy[1] == name:
+                    await ctx.send("The brackets for {0} are `{1}`.".format(name, proxy[0]))
+    else:
+        await editProxyBrackets(ctx, name, newbrackets)
 
 @proxy.command(aliases=["s"])
 async def send(ctx, brackets:str, *, msg):
