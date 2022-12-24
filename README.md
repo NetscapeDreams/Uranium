@@ -8,10 +8,13 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
 * Registering and removing proxies
     * `u.proxy register`
     * `u.proxy remove`
-* Setting and viewing proxy avatars
+* Changing proxy information
     * `u.proxy avatar`
+    * `u.proxy rename`
+    * `u.proxy brackets`
 * Sending proxy messages
     * `u.proxy send`
+    * `logan:hello!`
 * Purging all data
     * `u.reinit`
 * Proxy Dice Rolls
@@ -22,7 +25,6 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
     * `u.export`
 
 ## What is not possible as of now?
-* Changing proxy names or brackets
 * Proxy birthdays
 * Proxy descriptions
 * Proxy nicknames

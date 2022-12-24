@@ -57,7 +57,21 @@ async def on_ready():
     game = discord.Game("with proxies! | {0}help".format(settings.prefixes[0]))
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
-# await uranium.process_commands(message)
+@uranium.event
+async def on_message(message):
+    # this event will handle autoproxy and multiproxies
+
+    ctx = await uranium.get_context(message)
+
+    settingsPath = "./user-data/{0}.tsv".format(message.author.id)
+    if os.path.exists(settingsPath):
+        with open(settingsPath) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if message.content.startswith(proxy[0]):
+                    await ctx.invoke(uranium.get_command("proxy send"), brackets=proxy[0], msg=message.content.strip(proxy[0]))
+    
+    await uranium.process_commands(message)
 
 @uranium.command()
 async def about(ctx):
