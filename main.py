@@ -1,12 +1,13 @@
 import discord
 import os
 import re
+import asyncio
 from random import randint
 from discord.ext import commands
 from discord import Webhook
 
 # import tsv editing commands
-from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar, editProxyName, editProxyBrackets
+from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar, editProxyName, editProxyBrackets, parseAll
 
 # initialization
 import settings
@@ -175,6 +176,55 @@ async def brackets(ctx, name, newbrackets="nuthin"):
                     await ctx.send("The brackets for {0} are `{1}`.".format(name, proxy[0]))
     else:
         await editProxyBrackets(ctx, name, newbrackets)
+
+@proxy.command()
+async def list(ctx):
+    pageCount = 0
+    proxies, proxyCount = parseAll(ctx)
+    embedVar = discord.Embed(
+    title="Your Isotopes", description="You have a total of {0} isotopes. Page 1/{1}.".format(proxyCount, len(proxies))
+            )
+    for x in proxies[0]:
+        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+    msg = await ctx.send(embed=embedVar)
+    await msg.add_reaction("🛑")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+
+    def check(reaction, user):
+        if int(user.id) == int(ctx.author.id):
+            return True
+        else:
+            return False
+
+    while True:
+        try:
+            reaction, user = await uranium.wait_for("reaction_add", timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            break
+        else:
+            userCheck = check("nothing", user)
+            if userCheck == True:
+                if reaction.emoji == '🛑':
+                    await msg.delete()
+                elif reaction.emoji == '⬅️' or reaction.emoji == '➡️':
+                    if reaction.emoji == '➡️':
+                        literalPageCount = pageCount + 1
+                        if literalPageCount == len(proxies):
+                            pageCount = 0
+                        else:
+                            pageCount += 1
+                    else:
+                        if pageCount == 0:
+                            pageCount = len(proxies) - 1
+                        else:
+                            pageCount -= 1
+                    embedVar = discord.Embed(
+                    title="Your Isotopes", description="You have a total of {0} isotopes. Page {1}/{2}.".format(proxyCount, pageCount + 1, len(proxies))
+                            )
+                    for x in proxies[pageCount]:
+                        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+                    await msg.edit(embed=embedVar)
 
 @proxy.command(aliases=["s"])
 async def send(ctx, brackets:str, *, msg):

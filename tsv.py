@@ -130,3 +130,38 @@ def editProxyBrackets(ctx, name, newbrackets):
     x.close()
 
     return ctx.send(":white_check_mark: *Brackets successfully saved.*")
+
+def parseAll(ctx):
+    linesLength = 0
+    lineCounter = 0
+    proxyCounter = 0
+    groupArray = []
+    finalArray = []
+    try:
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as g:
+            # length check
+            for lineCheck in g:
+                if lineCheck == "\n":
+                    pass
+                else:
+                    linesLength += 1
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if line == "\n":
+                    pass
+                elif proxy[2].endswith("/n") or proxy[2].endswith("\n"):
+                    proxy[2] = proxy[2][:-1]
+                    groupArray.append(proxy)
+                    lineCounter += 1
+                    proxyCounter += 1
+
+                if proxyCounter == 5 or lineCounter == linesLength:
+                    finalArray.append(groupArray)
+                    groupArray = []
+                    proxyCounter = 0
+                
+    except IOError:
+            return noDatabaseFound(ctx)
+    
+    return finalArray, lineCounter
