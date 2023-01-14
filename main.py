@@ -376,7 +376,7 @@ async def export(ctx):
 @uranium.command()
 async def data(ctx):
     embedVar = discord.Embed(
-    title="{0} and your data.".format(botName), description="What does {0} exactly do with data it obtains?".format(botName), color=0x00fff4
+    title="{0} and your data.".format(settings.botName), description="What does {0} exactly do with data it obtains?".format(settings.botName), color=0x00fff4
             )
     embedVar.set_footer(text="Last updated November 30th, 2022.")
     embedVar.add_field(name="User data", value="This bot stores your user ID (this is to help identify which file belongs to who) and the proxies you create via the information you provide.\nThis information is exportable via the bot's export command.", inline=False)
