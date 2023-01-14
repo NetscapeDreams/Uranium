@@ -9,6 +9,9 @@ from discord import Webhook
 # import tsv editing commands
 from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar, editProxyName, editProxyBrackets, parseAll
 
+# import webhook send command builder
+from webhook import buildSendCommand
+
 # initialization
 import settings
 try:
@@ -240,6 +243,7 @@ async def send(ctx, brackets:str, *, msg):
     else:
         detectThread = True
 
+    sendToThread = False
     redirect = False
     detectRedirect = re.compile("\{\{.*\}\}")
     if detectRedirect.search(msg):
@@ -276,6 +280,17 @@ async def send(ctx, brackets:str, *, msg):
         webhookID = await obtainWebhookData(ctx, ctx.channel.id)
         webhookList = await ctx.message.channel.webhooks()
 
+    # detect attachments
+    try:
+        getAttachments = ctx.message.attachments[0]
+    except:
+        fileAttachments = None
+    else:
+        fileAttachments = []
+        for x in ctx.message.attachments:
+            x = await discord.Attachment.to_file(x)
+            fileAttachments.append(x)
+
     for wh in webhookList:
         if str(webhookID) == str(wh):
 
@@ -308,50 +323,12 @@ async def send(ctx, brackets:str, *, msg):
                 embedVar = discord.Embed(
                 title=res[0], description="{1} + {2} → **{3}**".format(res[0], result, numberz[2], sum(result, numberz[2])), color=0x20FD00
                         )
-
-                if avtr == "*":
-                    if detectThread == True and redirect == False:
-                        await wh.send(msg, username=name, embed=embedVar, thread=ctx.channel)
-                    elif redirect == True:
-                        if sendToThread == True:
-                            await wh.send(msg, username=name, embed=embedVar, thread=channel)
-                        else:
-                            await wh.send(msg, username=name, embed=embedVar)
-                    else:
-                        await wh.send(msg, username=name, embed=embedVar)
-                else:
-                    if detectThread == True and redirect == False:
-                        await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar, thread=ctx.channel)
-                    elif redirect == True:
-                        if sendToThread == True:
-                            await wh.send(msg, username=name, avatar_url=avtr, thread=channel, embed=embedVar)
-                        else:
-                            await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar)
-                    else:
-                        await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar)
-                return
-
-            if avtr == "*":
-                if detectThread == True and redirect == False:
-                    await wh.send(msg, username=name, thread=ctx.channel)
-                elif redirect == True:
-                    if sendToThread == True:
-                        await wh.send(msg, username=name, thread=channel)
-                    else:
-                        await wh.send(msg, username=name)
-                else:
-                    await wh.send(msg, username=name)
             else:
-                if detectThread == True and redirect == False:
-                    await wh.send(msg, username=name, avatar_url=avtr, thread=ctx.channel)
-                elif redirect == True:
-                    if sendToThread == True:
-                        await wh.send(msg, username=name, avatar_url=avtr, thread=channel)
-                    else:
-                        await wh.send(msg, username=name, avatar_url=avtr)
-                else:
-                    await wh.send(msg, username=name, avatar_url=avtr)
+                embedVar = None
             
+            sendCommand = buildSendCommand(msg=msg, username=name, avatar=avtr, attachments=fileAttachments, detectThread=detectThread, sendToThread=sendToThread, redirect=redirect, embed=embedVar)
+            await eval(sendCommand)
+
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
 
