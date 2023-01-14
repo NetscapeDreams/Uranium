@@ -178,11 +178,13 @@ async def brackets(ctx, name, newbrackets="nuthin"):
         await editProxyBrackets(ctx, name, newbrackets)
 
 @proxy.command()
-async def list(ctx):
+async def list(ctx, member: discord.Member=None):
+    if member == None:
+        member = ctx.message.author
     pageCount = 0
-    proxies, proxyCount = parseAll(ctx)
+    proxies, proxyCount = parseAll(ctx, member)
     embedVar = discord.Embed(
-    title="Your Isotopes", description="You have a total of {0} isotopes. Page 1/{1}.".format(proxyCount, len(proxies))
+    title="{0}'s Isotopes".format(ctx.author.name), description="{0} has a total of {1} isotopes. Page 1/{2}.".format(ctx.author.name, proxyCount, len(proxies))
             )
     for x in proxies[0]:
         embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
@@ -220,7 +222,7 @@ async def list(ctx):
                         else:
                             pageCount -= 1
                     embedVar = discord.Embed(
-                    title="Your Isotopes", description="You have a total of {0} isotopes. Page {1}/{2}.".format(proxyCount, pageCount + 1, len(proxies))
+                    title="{0}'s Isotopes".format(ctx.author.name), description="{0} has a total of {1} isotopes. Page {2}/{3}.".format(ctx.author.name, proxyCount, pageCount + 1, len(proxies))
                             )
                     for x in proxies[pageCount]:
                         embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)

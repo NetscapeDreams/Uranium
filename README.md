@@ -8,7 +8,7 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
 * Registering and removing proxies
     * `u.proxy register`
     * `u.proxy remove`
-* Listing owned proxies
+* Listing proxies owned by you or others
     * `u.proxy list`
 * Changing proxy information
     * `u.proxy avatar`
@@ -27,32 +27,37 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
     * `u.export`
 * Proxies in Threads or Forums
 
-## What is not possible as of now?
-* Proxy birthdays
-* Proxy descriptions
-* Proxy nicknames
-* Proxy tags
-* Including proxy brackets in messages
-* Proxy groups
-* Listing your current proxies in groups and listing specific proxy information
-* Finding proxies
-* Importing user data
-* Autoproxy
-* Privacy settings
-* Multiproxies
-* Slash commands
-* Server specific settings
-    * Specific prefixes per server
-    * Logging
-    * Channel-specific permissions
-* Editing proxy messages
-* Showing information about a proxy message
-* Reactions on messages
-    * X for deletion
-    * Pencil for editing
-    * Question mark for proxy information
-* Sending images or files under a proxy
-* Replying using proxies
+## What is not possible/planned to be added?
+* High importance:
+    * Proxy groups
+    * Listing your current proxies in groups
+    * Listing specific proxy information
+    * Finding proxies
+    * User settings file
+        * Who can see your proxies
+    * Multiproxies
+    * Editing proxy messages
+    * Reactions on messages
+        * X for deletion
+        * Pencil for editing
+        * Question mark for proxy information
+    * Sending images or files under a proxy
+    * Replying using proxies
+* Medium importance:
+    * Importing user data
+    * Autoproxy (requires user settings file)
+    * Server specific settings
+        * Specific prefixes per server
+        * Logging
+        * Channel-specific permissions
+    * Showing information about a proxy message
+* Low importance:
+    * Proxy birthdays
+    * Proxy descriptions
+    * Proxy nicknames
+    * Proxy tags
+    * Including proxy brackets in messages (requires user settings file)
+    * Slash commands
 
 ## Permissions
 

@@ -131,21 +131,21 @@ def editProxyBrackets(ctx, name, newbrackets):
 
     return ctx.send(":white_check_mark: *Brackets successfully saved.*")
 
-def parseAll(ctx):
+def parseAll(ctx, user):
     linesLength = 0
     lineCounter = 0
     proxyCounter = 0
     groupArray = []
     finalArray = []
     try:
-        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as g:
+        with open("./user-data/{0}.tsv".format(user.id)) as g:
             # length check
             for lineCheck in g:
                 if lineCheck == "\n":
                     pass
                 else:
                     linesLength += 1
-        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+        with open("./user-data/{0}.tsv".format(user.id)) as f:
             for line in f:
                 proxy = line.split("\t")
                 if line == "\n":
