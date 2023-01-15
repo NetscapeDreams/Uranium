@@ -78,3 +78,90 @@ def parseProxy(ctx, brackets):
             proxy = line.split("\t")
             if proxy[0] == brackets:
                 return proxy[1], proxy[2].strip()
+
+def editProxyName(ctx, oldname, newname):
+    editedLine = 0
+
+    try:
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if proxy[1] == oldname:
+                    break
+                editedLine = editedLine + 1
+            else:
+                return noProxyFound(ctx)
+    except IOError:
+            return noDatabaseFound(ctx)
+
+    f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
+    filesaver = f.readlines()
+    filesaver[editedLine] = "{0}\t{1}\t{2}\n".format(proxy[0], newname, proxy[2])
+    f.close()
+
+    x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
+    x.writelines(filesaver)
+    x.close()
+
+    return ctx.send(":white_check_mark: *Name successfully saved.*")
+
+def editProxyBrackets(ctx, name, newbrackets):
+    editedLine = 0
+
+    try:
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if proxy[1] == name:
+                    break
+                editedLine = editedLine + 1
+            else:
+                return noProxyFound(ctx)
+    except IOError:
+            return noDatabaseFound(ctx)
+
+    f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
+    filesaver = f.readlines()
+    filesaver[editedLine] = "{0}\t{1}\t{2}\n".format(newbrackets, proxy[1], proxy[2])
+    f.close()
+
+    x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
+    x.writelines(filesaver)
+    x.close()
+
+    return ctx.send(":white_check_mark: *Brackets successfully saved.*")
+
+def parseAll(ctx, user):
+    linesLength = 0
+    lineCounter = 0
+    proxyCounter = 0
+    groupArray = []
+    finalArray = []
+    try:
+        with open("./user-data/{0}.tsv".format(user.id)) as g:
+            # length check
+            for lineCheck in g:
+                if lineCheck == "\n":
+                    pass
+                else:
+                    linesLength += 1
+        with open("./user-data/{0}.tsv".format(user.id)) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if line == "\n":
+                    pass
+                elif proxy[2].endswith("/n") or proxy[2].endswith("\n"):
+                    proxy[2] = proxy[2][:-1]
+                    groupArray.append(proxy)
+                    lineCounter += 1
+                    proxyCounter += 1
+
+                if proxyCounter == 5 or lineCounter == linesLength:
+                    finalArray.append(groupArray)
+                    groupArray = []
+                    proxyCounter = 0
+                
+    except IOError:
+            return noDatabaseFound(ctx)
+    
+    return finalArray, lineCounter

@@ -4,8 +4,18 @@
 modified = False
 respositoryLink = "https://github.com/BurningInfern0/Uranium"
 
+# the settings below in this file are not considered "modifications" and do not need the modified variable changed
+
 # please keep this in an array
 prefixes = ["u.", "U."]
 
 # mainly for the about section
 botName = "Uranium"
+
+# settings below do nothing, they're just placeholders for now
+
+# Allow Proxy Redirections
+proxyRedirections = True
+
+# Allow Dice Rolls
+diceRolls = True

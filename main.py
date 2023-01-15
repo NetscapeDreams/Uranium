@@ -1,12 +1,16 @@
 import discord
 import os
 import re
+import asyncio
 from random import randint
 from discord.ext import commands
 from discord import Webhook
 
 # import tsv editing commands
-from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar
+from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar, editProxyName, editProxyBrackets, parseAll
+
+# import webhook send command builder
+from webhook import buildSendCommand
 
 # initialization
 import settings
@@ -57,16 +61,30 @@ async def on_ready():
     game = discord.Game("with proxies! | {0}help".format(settings.prefixes[0]))
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
-# await uranium.process_commands(message)
+@uranium.event
+async def on_message(message):
+    # this event will handle autoproxy and multiproxies
+
+    ctx = await uranium.get_context(message)
+
+    settingsPath = "./user-data/{0}.tsv".format(message.author.id)
+    if os.path.exists(settingsPath):
+        with open(settingsPath) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if message.content.startswith(proxy[0]):
+                    await ctx.invoke(uranium.get_command("proxy send"), brackets=proxy[0], msg=message.content[(len(proxy[0])):])
+    
+    await uranium.process_commands(message)
 
 @uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
-    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0x00fff4
+    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0xff5e00
             )
     if settings.modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
-    embedVar.set_footer(text="Created by BurningInfern0.")
+    embedVar.set_footer(text="Created by NetscapeDreams. // Plutonium Release [v0.2.0]")
     embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/203663460-6863d8e6-66d8-4379-8fe9-aba48de15262.png")
     embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(settings.botName), inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
@@ -147,8 +165,85 @@ async def webhookstatus(ctx):
     except:
         await ctx.send(":x: My local webhook database did not find a match in this channel's webhook list.")
 
+@proxy.command()
+async def rename(ctx, oldname, newname):
+    await editProxyName(ctx, oldname, newname)
+
+@proxy.command()
+async def brackets(ctx, name, newbrackets="nuthin"):
+    if newbrackets == "nuthin":
+        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+            for line in f:
+                proxy = line.split("\t")
+                if proxy[1] == name:
+                    await ctx.send("The brackets for {0} are `{1}`.".format(name, proxy[0]))
+    else:
+        await editProxyBrackets(ctx, name, newbrackets)
+
+@proxy.command()
+async def list(ctx, member: discord.Member=None):
+    if member == None:
+        member = ctx.message.author
+    pageCount = 0
+    proxies, proxyCount = parseAll(ctx, member)
+    embedVar = discord.Embed(
+    title="{0}'s Isotopes".format(member.name), description="{0} has a total of {1} isotopes. Page 1/{2}.".format(member.name, proxyCount, len(proxies))
+            )
+    for x in proxies[0]:
+        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+    msg = await ctx.send(embed=embedVar)
+    await msg.add_reaction("🛑")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+
+    def check(reaction, user):
+        if int(user.id) == int(ctx.author.id):
+            return True
+        else:
+            return False
+
+    while True:
+        try:
+            reaction, user = await uranium.wait_for("reaction_add", timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            break
+        else:
+            userCheck = check("nothing", user)
+            if userCheck == True:
+                if reaction.emoji == '🛑':
+                    await msg.delete()
+                elif reaction.emoji == '⬅️' or reaction.emoji == '➡️':
+                    if reaction.emoji == '➡️':
+                        literalPageCount = pageCount + 1
+                        if literalPageCount == len(proxies):
+                            pageCount = 0
+                        else:
+                            pageCount += 1
+                    else:
+                        if pageCount == 0:
+                            pageCount = len(proxies) - 1
+                        else:
+                            pageCount -= 1
+                    embedVar = discord.Embed(
+                    title="{0}'s Isotopes".format(member.name), description="{0} has a total of {1} isotopes. Page {2}/{3}.".format(member.name, proxyCount, pageCount + 1, len(proxies))
+                            )
+                    for x in proxies[pageCount]:
+                        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+                    await msg.edit(embed=embedVar)
+
 @proxy.command(aliases=["s"])
 async def send(ctx, brackets:str, *, msg):
+
+    # attempt to detect if sending channel is a thread
+    try:
+        # thread channels have a parent_id attribute
+        detectThread = ctx.channel.parent_id
+    except:
+        detectThread = False
+    else:
+        detectThread = True
+
+    sendToThread = False
     redirect = False
     detectRedirect = re.compile("\{\{.*\}\}")
     if detectRedirect.search(msg):
@@ -160,22 +255,54 @@ async def send(ctx, brackets:str, *, msg):
         if res[0].startswith("<#"):
             urghID = re.sub("\D", " ", res[0]);
             channelID = re.sub("\s", "", urghID);
-            webhookID = await obtainWebhookData(ctx, channelID)
+            channel = uranium.get_channel(int(channelID))
+
+            try:
+                sendToThread = channel.parent_id
+            except:
+                sendToThread = False
+                webhookID = await obtainWebhookData(ctx, channel.id)
+                webhookList = await channel.webhooks()
+            else:
+                sendToThread = True
+                webhookID = await obtainWebhookData(ctx, channel.parent_id)
+                parentChannel = uranium.get_channel(int(channel.parent_id))
+                webhookList = await parentChannel.webhooks()
+
             msg = msg.replace(originalres, "")
             redirect = True
-        else:
-            webhookID = await obtainWebhookData(ctx, ctx.channel.id)
-    else:
-        webhookID = await obtainWebhookData(ctx, ctx.channel.id)
-
-    if redirect == True:
-        channel = uranium.get_channel(int(channelID))
+    
+    if detectThread == True and redirect == False:
+        webhookID = await obtainWebhookData(ctx, ctx.channel.parent_id)
+        channel = uranium.get_channel(int(ctx.channel.parent_id))
         webhookList = await channel.webhooks()
-    else:
+    elif detectThread == False and redirect == False:
+        webhookID = await obtainWebhookData(ctx, ctx.channel.id)
         webhookList = await ctx.message.channel.webhooks()
+
+    # detect attachments
+    try:
+        getAttachments = ctx.message.attachments[0]
+    except:
+        fileAttachments = None
+    else:
+        fileAttachments = []
+        for x in ctx.message.attachments:
+            x = await discord.Attachment.to_file(x)
+            fileAttachments.append(x)
+
+    # detect a reply
+    try:
+        getReply = ctx.message.reference
+        replyInformation = await ctx.fetch_message(getReply.message_id)
+    except:
+        replyInformation = None
 
     for wh in webhookList:
         if str(webhookID) == str(wh):
+
+            embedList = []
+
             try:
                 name, avtr = parseProxy(ctx, brackets)
             except:
@@ -202,21 +329,28 @@ async def send(ctx, brackets:str, *, msg):
 
                 msg = msg.replace(originalres, "`🎲{0}`".format(sum(result, numberz[2])))
 
-                embedVar = discord.Embed(
+                dieEmbed = discord.Embed(
                 title=res[0], description="{1} + {2} → **{3}**".format(res[0], result, numberz[2], sum(result, numberz[2])), color=0x20FD00
                         )
-
-                if avtr == "*":
-                    await wh.send(msg, username=name, embed=embedVar)
-                else:
-                    await wh.send(msg, username=name, avatar_url=avtr, embed=embedVar)
-                return
-
-            if avtr == "*":
-                await wh.send(msg, username=name)
+                embedList.append(dieEmbed)
             else:
-                await wh.send(msg, username=name, avatar_url=avtr)
-            
+                dieEmbed = None
+
+            if replyInformation == None:
+                pass
+            else:
+                replyEmbed = discord.Embed(
+                description=replyInformation.content, color=0x20FD00
+                        )
+                replyEmbed.set_author(name=replyInformation.author.name, icon_url=replyInformation.author.avatar.url)
+                embedList.append(replyEmbed)
+
+            if replyInformation == None and dieEmbed == None:
+                embedList = None
+
+            sendCommand = buildSendCommand(msg=msg, username=name, avatar=avtr, attachments=fileAttachments, detectThread=detectThread, sendToThread=sendToThread, redirect=redirect, embeds=embedList)
+            await eval(sendCommand)
+
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
 
@@ -243,7 +377,7 @@ async def export(ctx):
 @uranium.command()
 async def data(ctx):
     embedVar = discord.Embed(
-    title="{0} and your data.".format(botName), description="What does {0} exactly do with data it obtains?".format(botName), color=0x00fff4
+    title="{0} and your data.".format(settings.botName), description="What does {0} exactly do with data it obtains?".format(settings.botName), color=0x00fff4
             )
     embedVar.set_footer(text="Last updated November 30th, 2022.")
     embedVar.add_field(name="User data", value="This bot stores your user ID (this is to help identify which file belongs to who) and the proxies you create via the information you provide.\nThis information is exportable via the bot's export command.", inline=False)
