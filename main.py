@@ -73,7 +73,7 @@ async def on_message(message):
             for line in f:
                 proxy = line.split("\t")
                 if message.content.startswith(proxy[0]):
-                    await ctx.invoke(uranium.get_command("proxy send"), brackets=proxy[0], msg=message.content.strip(proxy[0]))
+                    await ctx.invoke(uranium.get_command("proxy send"), brackets=proxy[0], msg=message.content[(len(proxy[0])):])
     
     await uranium.process_commands(message)
 
@@ -84,7 +84,7 @@ async def about(ctx):
             )
     if settings.modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
-    embedVar.set_footer(text="Created by BurningInfern0. // Plutonium Release")
+    embedVar.set_footer(text="Created by NetscapeDreams. // Plutonium Release [v0.2.0]")
     embedVar.set_image(url="https://user-images.githubusercontent.com/74492478/203663460-6863d8e6-66d8-4379-8fe9-aba48de15262.png")
     embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(settings.botName), inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
@@ -291,8 +291,17 @@ async def send(ctx, brackets:str, *, msg):
             x = await discord.Attachment.to_file(x)
             fileAttachments.append(x)
 
+    # detect a reply
+    try:
+        getReply = ctx.message.reference
+        replyInformation = await ctx.fetch_message(getReply.message_id)
+    except:
+        replyInformation = None
+
     for wh in webhookList:
         if str(webhookID) == str(wh):
+
+            embedList = []
 
             try:
                 name, avtr = parseProxy(ctx, brackets)
@@ -320,13 +329,26 @@ async def send(ctx, brackets:str, *, msg):
 
                 msg = msg.replace(originalres, "`🎲{0}`".format(sum(result, numberz[2])))
 
-                embedVar = discord.Embed(
+                dieEmbed = discord.Embed(
                 title=res[0], description="{1} + {2} → **{3}**".format(res[0], result, numberz[2], sum(result, numberz[2])), color=0x20FD00
                         )
+                embedList.append(dieEmbed)
             else:
-                embedVar = None
-            
-            sendCommand = buildSendCommand(msg=msg, username=name, avatar=avtr, attachments=fileAttachments, detectThread=detectThread, sendToThread=sendToThread, redirect=redirect, embed=embedVar)
+                dieEmbed = None
+
+            if replyInformation == None:
+                pass
+            else:
+                replyEmbed = discord.Embed(
+                description=replyInformation.content, color=0x20FD00
+                        )
+                replyEmbed.set_author(name=replyInformation.author.name, icon_url=replyInformation.author.avatar.url)
+                embedList.append(replyEmbed)
+
+            if replyInformation == None and dieEmbed == None:
+                embedList = None
+
+            sendCommand = buildSendCommand(msg=msg, username=name, avatar=avtr, attachments=fileAttachments, detectThread=detectThread, sendToThread=sendToThread, redirect=redirect, embeds=embedList)
             await eval(sendCommand)
 
             return

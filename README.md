@@ -1,8 +1,12 @@
 # Uranium
 
-Uranium is a bot designed for roleplaying and for plurality or system creation, created under Python via the pycord library under the GNU Affero General Public License version 3.
+Uranium is a bot whose purpose is for roleplaying and for plurality or system creation, created under Python via the pycord library and under the GNU Affero General Public License version 3.
 
-Or to put it bluntly, Uranium is designed to be an open source version of Tupperbox.
+Uranium is designed to be a base engine for proxy use, and can be tweaked in any way you desire. Uranium is to be self-hosted, where you're in control.
+
+Why not try Uranium today? 
+
+If it's just not your cup of tea yet, that's okay! Maybe you should come back later when there are more features and quality of life improvements.
 
 ## What is currently possible as of now?
 * Registering and removing proxies
@@ -26,6 +30,8 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
 * Exporting user data
     * `u.export`
 * Proxies in Threads or Forums
+* Sending images or files under a proxy
+* Replying using proxies
 
 ## What is not possible/planned to be added?
 * High importance:
@@ -41,8 +47,7 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
         * X for deletion
         * Pencil for editing
         * Question mark for proxy information
-    * Sending images or files under a proxy
-    * Replying using proxies
+    
 * Medium importance:
     * Importing user data
     * Autoproxy (requires user settings file)
@@ -51,6 +56,7 @@ Or to put it bluntly, Uranium is designed to be an open source version of Tupper
         * Logging
         * Channel-specific permissions
     * Showing information about a proxy message
+
 * Low importance:
     * Proxy birthdays
     * Proxy descriptions

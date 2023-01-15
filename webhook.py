@@ -1,4 +1,4 @@
-def buildSendCommand(msg, username, avatar, detectThread, sendToThread, redirect, embed=None, attachments=None):
+def buildSendCommand(msg, username, avatar, detectThread, sendToThread, redirect, embeds=None, attachments=None):
     baseCommand = "wh.send(msg, username={0}".format("name")
 
     if avatar == "*":
@@ -11,10 +11,10 @@ def buildSendCommand(msg, username, avatar, detectThread, sendToThread, redirect
     else:
         baseCommand = baseCommand + ", files={0}".format("fileAttachments")
 
-    if embed == None:
+    if embeds == None:
         pass
     else:
-        baseCommand = baseCommand + ", embed={0}".format("embedVar")
+        baseCommand = baseCommand + ", embeds={0}".format("embedList")
 
     if detectThread == True and redirect == False:
         baseCommand = baseCommand + ", thread={0}".format("ctx.channel")
