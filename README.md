@@ -1,5 +1,9 @@
 # Uranium
 
+<p align="center">
+<img src="https://user-images.githubusercontent.com/121664679/212557903-5b82c02d-5ece-48f4-9d8a-15616137367b.png" />
+</p>
+
 Uranium is a bot whose purpose is for roleplaying and for plurality or system creation, created under Python via the pycord library and under the GNU Affero General Public License version 3.
 
 Uranium is designed to be a base engine for proxy use, and can be tweaked in any way you desire. Uranium is to be self-hosted, where you're in control.
