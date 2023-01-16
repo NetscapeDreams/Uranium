@@ -73,7 +73,7 @@ async def on_message(message):
             for line in f:
                 proxy = line.split("\t")
                 if message.content.startswith(proxy[0]):
-                    await ctx.invoke(uranium.get_command("proxy send"), brackets=proxy[0], msg=message.content[(len(proxy[0])):])
+                    await ctx.invoke(uranium.get_command("send"), brackets=proxy[0], msg=message.content[(len(proxy[0])):])
     
     await uranium.process_commands(message)
 
@@ -107,13 +107,8 @@ async def confirm(ctx):
     databaseCreation = open(databasePath, "w")
     databaseCreation.close()
     await ctx.send(":white_check_mark: *Your database has been reinitalized. All former proxies and settings have been deleted.*")
-    
 
-@uranium.group(invoke_without_command=True, aliases=["p"])
-async def proxy(ctx):
-    await ctx.send(":x: *Please provide a subcommand.*\nWhat do you want me to do with proxies? See `{0}help proxy` for more information.".format(settings.prefixes[0]))
-
-@proxy.command(description="register proxy")
+@uranium.command(description="register proxy")
 async def register(ctx, name:str, brackets:str):
     if len(name) > 80:
         await ctx.send(":x: *Your proxy's name is too long, please keep it equal to or under 80 characters.*")
@@ -128,13 +123,13 @@ async def register(ctx, name:str, brackets:str):
     appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
     appendProxy.write("{0}\t{1}\t{2}\n".format(brackets, name, proxyAvatar))
     appendProxy.close()
-    await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `{2}proxy send {1} I'm a proxy!`".format(name, brackets, settings.prefixes[0]))
+    await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `{2}send {1} I'm a proxy!`\nOr, alternatively, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets, settings.prefixes[0]))
 
-@proxy.command(description="delete a proxy")
+@uranium.command(description="delete a proxy")
 async def remove(ctx, name:str):
     await removeProxy(ctx, name)
 
-@proxy.command(description="set a proxy's avatar")
+@uranium.command(description="set a proxy's avatar")
 async def avatar(ctx, name:str):
     try:
         avatar = ctx.message.attachments[0]
@@ -143,7 +138,7 @@ async def avatar(ctx, name:str):
     
     await setProxyAvatar(ctx, name, avatar)
 
-@proxy.command(description="mainly for debugging", aliases=["whs"])
+@uranium.command(description="mainly for debugging", aliases=["whs"])
 async def webhookstatus(ctx):
     direc = os.listdir("./webhook-data/")
     for file in direc:
@@ -165,11 +160,11 @@ async def webhookstatus(ctx):
     except:
         await ctx.send(":x: My local webhook database did not find a match in this channel's webhook list.")
 
-@proxy.command()
+@uranium.command()
 async def rename(ctx, oldname, newname):
     await editProxyName(ctx, oldname, newname)
 
-@proxy.command()
+@uranium.command()
 async def brackets(ctx, name, newbrackets="nuthin"):
     if newbrackets == "nuthin":
         with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
@@ -180,7 +175,7 @@ async def brackets(ctx, name, newbrackets="nuthin"):
     else:
         await editProxyBrackets(ctx, name, newbrackets)
 
-@proxy.command()
+@uranium.command()
 async def list(ctx, member: discord.Member=None):
     if member == None:
         member = ctx.message.author
@@ -231,7 +226,7 @@ async def list(ctx, member: discord.Member=None):
                         embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
                     await msg.edit(embed=embedVar)
 
-@proxy.command(aliases=["s"])
+@uranium.command(aliases=["s"])
 async def send(ctx, brackets:str, *, msg):
 
     # attempt to detect if sending channel is a thread

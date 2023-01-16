@@ -14,23 +14,23 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
 
 ## What is currently possible as of now?
 * Registering and removing proxies
-    * `u.proxy register`
-    * `u.proxy remove`
+    * `u.register`
+    * `u.remove`
 * Listing proxies owned by you or others
-    * `u.proxy list`
+    * `u.list`
 * Changing proxy information
-    * `u.proxy avatar`
-    * `u.proxy rename`
-    * `u.proxy brackets`
+    * `u.avatar`
+    * `u.rename`
+    * `u.brackets`
 * Sending proxy messages
-    * `u.proxy send`
+    * `u.send`
     * `logan:hello!`
 * Purging all data
     * `u.reinit`
 * Proxy Dice Rolls
-    * `u.proxy send Logan I cast fireball for {{2d6+5}} damage!`
+    * `u.send Logan I cast fireball for {{2d6+5}} damage!`
 * Redirecting proxy messages to different channels
-    * `u.proxy send Logan {{#channel}} hey, i'm being sent into a different channel!`
+    * `u.send Logan {{#channel}} hey, i'm being sent into a different channel!`
 * Exporting user data
     * `u.export`
 * Proxies in Threads or Forums
