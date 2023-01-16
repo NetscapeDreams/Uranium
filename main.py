@@ -302,7 +302,6 @@ async def send(ctx, brackets:str, *, msg):
                 name, avtr = parseProxy(ctx, brackets)
             except:
                 return
-            await ctx.message.delete()
 
             detectCommand = re.compile("\{\{.*\}\}")
             if detectCommand.search(msg):
@@ -345,6 +344,7 @@ async def send(ctx, brackets:str, *, msg):
 
             sendCommand = buildSendCommand(msg=msg, username=name, avatar=avtr, attachments=fileAttachments, detectThread=detectThread, sendToThread=sendToThread, redirect=redirect, embeds=embedList)
             await eval(sendCommand)
+            await ctx.message.delete()
 
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
