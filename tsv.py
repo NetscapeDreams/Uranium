@@ -63,7 +63,7 @@ def setProxyAvatar(ctx, name, avatar):
 
     f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
     filesaver = f.readlines()
-    filesaver[editedLine] = "{0}\t{1}\t{2}\n".format(proxy[0], proxy[1], avatar.url)
+    filesaver[editedLine] = "{0}\t{1}\t{2}".format(proxy[0], proxy[1], avatar.url)
     f.close()
 
     x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
@@ -96,7 +96,7 @@ def editProxyName(ctx, oldname, newname):
 
     f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
     filesaver = f.readlines()
-    filesaver[editedLine] = "{0}\t{1}\t{2}\n".format(proxy[0], newname, proxy[2])
+    filesaver[editedLine] = "{0}\t{1}\t{2}".format(proxy[0], newname, proxy[2])
     f.close()
 
     x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
@@ -122,7 +122,7 @@ def editProxyBrackets(ctx, name, newbrackets):
 
     f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
     filesaver = f.readlines()
-    filesaver[editedLine] = "{0}\t{1}\t{2}\n".format(newbrackets, proxy[1], proxy[2])
+    filesaver[editedLine] = "{0}\t{1}\t{2}".format(newbrackets, proxy[1], proxy[2])
     f.close()
 
     x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
