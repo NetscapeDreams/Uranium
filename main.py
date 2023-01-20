@@ -354,7 +354,7 @@ async def send(ctx, brackets:str, *, msg):
 async def delete(ctx):
     getReply = ctx.message.reference
     reply = await ctx.fetch_message(getReply.message_id)
-    reply.delete()
+    await reply.delete()
 
 @uranium.command()
 async def export(ctx):
