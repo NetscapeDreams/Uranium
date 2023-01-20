@@ -350,11 +350,6 @@ async def send(ctx, brackets:str, *, msg):
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
 
 @uranium.command()
-@commands.is_owner()
-async def execute(ctx, *, com):
-    exec(com)
-
-@uranium.command()
 async def export(ctx):
     try:
         if os.stat('./user-data/{0}.tsv'.format(ctx.author.id)).st_size == 0:
