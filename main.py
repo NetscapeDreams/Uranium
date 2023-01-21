@@ -184,16 +184,25 @@ async def register(ctx, name:str, brackets:str):
         await ctx.send(":x: *Your proxy's name is too long, please keep it equal to or under 80 characters.*")
         return
 
+    if "text" in brackets:
+        await ctx.send(":speech_balloon: *I have detected the \"text\" parameter in your proxy's brackets, commonly used by Tupperbox and PluralKit.*\n\nPlease note, Uranium does not support the \"text\" parameter, and you can change your proxy's brackets via the `{0}brackets` command.\n**Registration will continue.**".format(settings.prefixes[0]))
+
     try:
         avatar = ctx.message.attachments[0]
         proxyAvatar = avatar.url
     except:
         proxyAvatar = "*"
 
-    appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
-    appendProxy.write("{0}\t{1}\t{2}\n".format(brackets, name, proxyAvatar))
-    appendProxy.close()
-    await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, send `{2}send {1} I'm a proxy!`\nOr, alternatively, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets, settings.prefixes[0]))
+    conflictions = checkForConflicts(ctx, name, brackets)
+    if conflictions == None:
+        appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
+        appendProxy.write("{0}\t{1}\t{2}\n".format(brackets, name, proxyAvatar))
+        appendProxy.close()
+        await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets))
+    elif conflictions == "name":
+        await ctx.send(":x: There already is a proxy with this name in your user data.")
+    elif conflictions == "brackets":
+        await ctx.send(":x: There already is a proxy with these brackets in your user data.")
 
 @uranium.command(description="delete a proxy")
 async def remove(ctx, name:str):

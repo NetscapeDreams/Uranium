@@ -50,7 +50,6 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * Finding proxies
     * User settings file
         * Who can see your proxies
-    * "text" in brackets
     
 * Medium importance:
     * Importing user data

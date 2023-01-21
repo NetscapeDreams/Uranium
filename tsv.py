@@ -175,3 +175,14 @@ def checkForPermission(ctx, msgid, userid):
                     return True
         else:
             return False
+
+def checkForConflicts(ctx, name, brackets):
+    with open("./user-data/{0}.tsv".format(ctx.author.id)) as f:
+        for line in f:
+            proxy = line.split("\t")
+            if proxy[0] == brackets:
+                return "brackets"
+            if proxy[1] == name:
+                return "name"
+        else:
+            return None
