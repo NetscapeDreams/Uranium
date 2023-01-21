@@ -90,11 +90,61 @@ async def on_message(message):
     settingsPath = "./user-data/{0}.tsv".format(message.author.id)
     if os.path.exists(settingsPath):
         with open(settingsPath) as f:
+            multiproxyList = []
+            proxyStart = False
             for line in f:
                 proxy = line.split("\t")
+                proxyDetect = "\n{0}".format(proxy[0])
                 if message.content.startswith(proxy[0]):
-                    await ctx.invoke(uranium.get_command("send"), brackets=proxy[0], msg=message.content[(len(proxy[0])):])
+                    multiproxyList.append(proxy[0])
+                    proxyStart = True
+                if proxyDetect in message.content and proxyStart == True:
+                    multiproxyList.append(proxy[0])
     
+            if len(multiproxyList) > 0:
+
+                # detect attachments
+                try:
+                    getAttachments = ctx.message.attachments[0]
+                except:
+                    fileAttachments = None
+                else:
+                    fileAttachments = []
+                    for x in ctx.message.attachments:
+                        x = await discord.Attachment.to_file(x)
+                        fileAttachments.append(x)
+
+                # detect a reply
+                try:
+                    getReply = ctx.message.reference
+                    replyInformation = await ctx.fetch_message(getReply.message_id)
+                except:
+                    replyInformation = None
+
+                rawLines = message.content.split("\n")
+                lineCount = message.content.count("\n") + 1
+                finishedLine = ""
+                currentBrackets = ""
+                firstMessage = True
+                firstMessage2 = True # for images and reply information
+                for x in range(lineCount):
+                    for proxy in multiproxyList:
+                        if proxy in rawLines[x]:
+                            if firstMessage == False:
+                                if firstMessage2 == True:
+                                    await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True, replyInformation=replyInformation, fileAttachments=fileAttachments)
+                                    firstMessage2 = False
+                                else:
+                                    await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True)
+                            finishedLine = rawLines[x][(len(proxy)):]
+                            currentBrackets = proxy
+                            firstMessage = False
+                            break
+                    else:
+                        finishedLine += "\n{0}".format(rawLines[x])
+                else:
+                    await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, replyInformation=replyInformation, fileAttachments=fileAttachments)
+
     await uranium.process_commands(message)
 
 @uranium.command()
@@ -247,7 +297,7 @@ async def list(ctx, member: discord.Member=None):
                     await msg.edit(embed=embedVar)
 
 @uranium.command(aliases=["s"])
-async def send(ctx, brackets:str, *, msg):
+async def send(ctx, brackets:str, *, msg, multiProxy=None, replyInformation=None, fileAttachments=None):
 
     # attempt to detect if sending channel is a thread
     try:
@@ -295,24 +345,6 @@ async def send(ctx, brackets:str, *, msg):
         webhookID = await obtainWebhookData(ctx, ctx.channel.id)
         webhookList = await ctx.message.channel.webhooks()
 
-    # detect attachments
-    try:
-        getAttachments = ctx.message.attachments[0]
-    except:
-        fileAttachments = None
-    else:
-        fileAttachments = []
-        for x in ctx.message.attachments:
-            x = await discord.Attachment.to_file(x)
-            fileAttachments.append(x)
-
-    # detect a reply
-    try:
-        getReply = ctx.message.reference
-        replyInformation = await ctx.fetch_message(getReply.message_id)
-    except:
-        replyInformation = None
-
     for wh in webhookList:
         if str(webhookID) == str(wh):
 
@@ -356,7 +388,12 @@ async def send(ctx, brackets:str, *, msg):
                 replyEmbed = discord.Embed(
                 description=replyInformation.content, color=0x20FD00
                         )
-                replyEmbed.set_author(name=replyInformation.author.name, icon_url=replyInformation.author.avatar.url)
+                try:
+                    replyAvatar = replyInformation.author.avatar.url
+                except:
+                    replyEmbed.set_author(name=replyInformation.author.name)
+                else:
+                    replyEmbed.set_author(name=replyInformation.author.name, icon_url=replyInformation.author.avatar.url)
                 embedList.append(replyEmbed)
 
             if replyInformation == None and dieEmbed == None:
@@ -369,7 +406,8 @@ async def send(ctx, brackets:str, *, msg):
             appendMessage.write("{0}\t{1}\t{2}\n".format(webhookMessage.id, ctx.author.id, brackets))
             appendMessage.close()
 
-            await ctx.message.delete()
+            if multiProxy == None:
+                await ctx.message.delete()
 
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")

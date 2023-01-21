@@ -22,8 +22,7 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * `u.avatar`
     * `u.rename`
     * `u.brackets`
-* Sending proxy messages
-    * `u.send`
+* Sending proxy messages via brackets
     * `logan:hello!`
 * Purging all data
     * `u.reinit`
@@ -41,6 +40,7 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * `u.delete`
 * Reactions on messages
     * X for deletion
+* Multiproxies
 
 ## What is not possible/planned to be added?
 * High importance:
@@ -50,7 +50,6 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * Finding proxies
     * User settings file
         * Who can see your proxies
-    * Multiproxies
     * "text" in brackets
     
 * Medium importance:
