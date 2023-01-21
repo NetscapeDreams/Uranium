@@ -1,30 +1,30 @@
 def buildSendCommand(msg, username, avatar, detectThread, sendToThread, redirect, embeds=None, attachments=None):
-    baseCommand = "wh.send(msg, username={0}".format("name")
+    baseCommand = "wh.send(msg, username=name"
 
     if avatar == "*":
         pass
     else:
-        baseCommand = baseCommand + ", avatar_url={0}".format("avtr")
+        baseCommand = baseCommand + ", avatar_url=avtr"
 
     if attachments == None:
         pass
     else:
-        baseCommand = baseCommand + ", files={0}".format("fileAttachments")
+        baseCommand = baseCommand + ", files=fileAttachments"
 
     if embeds == None:
         pass
     else:
-        baseCommand = baseCommand + ", embeds={0}".format("embedList")
+        baseCommand = baseCommand + ", embeds=embedList"
 
     if detectThread == True and redirect == False:
-        baseCommand = baseCommand + ", thread={0}".format("ctx.channel")
+        baseCommand = baseCommand + ", thread=ctx.channel"
     elif redirect == True:
         if sendToThread == True:
-            baseCommand = baseCommand + ", thread={0}".format("channel")
+            baseCommand = baseCommand + ", thread=channel"
         else:
             pass
     else:
         pass
 
-    baseCommand = baseCommand + ")"
+    baseCommand = baseCommand + ", wait=True)"
     return baseCommand

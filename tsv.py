@@ -165,3 +165,13 @@ def parseAll(ctx, user):
             return noDatabaseFound(ctx)
     
     return finalArray, lineCounter
+
+def checkForPermission(ctx, msgid):
+    with open("./message-logs/{0}.tsv".format(ctx.guild.id)) as f:
+        for line in f:
+            message = line.split("\t")
+            if message[0] == str(msgid):
+                if message[1] == str(ctx.author.id):
+                    return True
+        else:
+            return False

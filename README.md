@@ -36,6 +36,9 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
 * Proxies in Threads or Forums
 * Sending images or files under a proxy
 * Replying using proxies
+* Editing/deleting proxy messages
+    * `u.edit`
+    * `u.delete`
 
 ## What is not possible/planned to be added?
 * High importance:
@@ -46,11 +49,10 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * User settings file
         * Who can see your proxies
     * Multiproxies
-    * Editing proxy messages
     * Reactions on messages
         * X for deletion
-        * Pencil for editing
         * Question mark for proxy information
+    * "text" in brackets
     
 * Medium importance:
     * Importing user data

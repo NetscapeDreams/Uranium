@@ -7,13 +7,14 @@ from discord.ext import commands
 from discord import Webhook
 
 # import tsv editing commands
-from tsv import removeProxy, getProxyAvatar, parseProxy, setProxyAvatar, editProxyName, editProxyBrackets, parseAll
+from tsv import *
 
 # import webhook send command builder
 from webhook import buildSendCommand
 
 # initialization
 import settings
+
 try:
     f = open("token", "r")
     tokenTest = f.read()
@@ -21,14 +22,27 @@ except:
     print("[URANIUM|Error] Token file could not be found or could not be read successfully, please create a bot via discordapi.com and copy the bot token into a file called 'token'.")
     exit()
 print("[URANIUM] Token file exists.")
+
 userDataExists = os.path.exists("./user-data/")
 if userDataExists == False:
     os.mkdir("user-data")
 print("[URANIUM] User data directory exists.")
+
 webhookDataExists = os.path.exists("./webhook-data/")
 if webhookDataExists == False:
     os.mkdir("webhook-data")
 print("[URANIUM] Webhook data directory exists.")
+
+messageLogsExists = os.path.exists("./message-logs/")
+if messageLogsExists == False:
+    os.mkdir("message-logs")
+print("[URANIUM] Message log directory exists.")
+if settings.messageLogging == "perSession":
+    print("[LOGGING] Deleting all previous message ID logging...")
+    for f in os.listdir("./message-logs/"):
+        os.remove(os.path.join("./message-logs/", f))
+else:
+    print("[LOGGING] Persistant messaging logging on.")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -343,18 +357,55 @@ async def send(ctx, brackets:str, *, msg):
                 embedList = None
 
             sendCommand = buildSendCommand(msg=msg, username=name, avatar=avtr, attachments=fileAttachments, detectThread=detectThread, sendToThread=sendToThread, redirect=redirect, embeds=embedList)
-            await eval(sendCommand)
+            webhookMessage = await eval(sendCommand)
+
+            appendMessage = open("./message-logs/{0}.tsv".format(ctx.guild.id), "a")
+            appendMessage.write("{0}\t{1}\t{2}\n".format(webhookMessage.id, ctx.author.id, brackets))
+            appendMessage.close()
+
             await ctx.message.delete()
 
             return
     await ctx.send(":x: **Something went wrong!**\nThe webhook ID in my local database could not be found in this channel's webhook list. *Did the webhook get deleted?*")
 
 @uranium.command()
-@commands.is_owner()
+async def edit(ctx, *, msg):
+    getReply = ctx.message.reference
+    replyInformation = await ctx.fetch_message(getReply.message_id)
+    checkPermission = checkForPermission(ctx, replyInformation.id)
+    if checkPermission == True:
+
+        try:
+            detectThread = ctx.channel.parent_id
+        except:
+            detectThread = False
+        else:
+            detectThread = True
+
+        if detectThread == True:
+            webhookID = await obtainWebhookData(ctx, ctx.channel.parent_id)
+            channel = uranium.get_channel(int(ctx.channel.parent_id))
+            webhookList = await channel.webhooks()
+        elif detectThread == False:
+            webhookID = await obtainWebhookData(ctx, ctx.channel.id)
+            webhookList = await ctx.message.channel.webhooks()
+
+        for wh in webhookList:
+            if str(webhookID) == str(wh):
+                if detectThread == False:
+                    await wh.edit_message(replyInformation.id, content=msg)
+                else:
+                    await wh.edit_message(replyInformation.id, content=msg, thread=ctx.channel)
+                await ctx.message.delete()
+
+@uranium.command()
 async def delete(ctx):
     getReply = ctx.message.reference
     reply = await ctx.fetch_message(getReply.message_id)
-    await reply.delete()
+    checkPermission = checkForPermission(ctx, reply.id)
+    if checkPermission == True:
+        await reply.delete()
+        await ctx.message.delete()
 
 @uranium.command()
 async def export(ctx):
