@@ -452,8 +452,8 @@ async def edit(ctx, *, msg):
                 await ctx.message.delete()
 
 @uranium.command()
-async def delete(ctx, user=False):
-    if user == False:
+async def delete(ctx, user=None):
+    if user == None:
         getReply = ctx.message.reference
         reply = await ctx.fetch_message(getReply.message_id)
         checkPermission = checkForPermission(ctx, reply.id, ctx.author.id)
