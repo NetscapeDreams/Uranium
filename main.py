@@ -244,8 +244,8 @@ async def rename(ctx, oldname, newname):
     await editProxyName(ctx, oldname, newname)
 
 @uranium.command()
-async def brackets(ctx, name, newbrackets="nuthin"):
-    if newbrackets == "nuthin":
+async def brackets(ctx, name, newbrackets=None):
+    if newbrackets == None:
         with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
             for line in f:
                 proxy = line.split("\t")
