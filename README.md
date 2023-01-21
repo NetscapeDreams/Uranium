@@ -39,6 +39,8 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
 * Editing/deleting proxy messages
     * `u.edit`
     * `u.delete`
+* Reactions on messages
+    * X for deletion
 
 ## What is not possible/planned to be added?
 * High importance:
@@ -50,7 +52,6 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
         * Who can see your proxies
     * Multiproxies
     * Reactions on messages
-        * X for deletion
         * Question mark for proxy information
     * "text" in brackets
     
