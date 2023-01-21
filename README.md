@@ -51,8 +51,6 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * User settings file
         * Who can see your proxies
     * Multiproxies
-    * Reactions on messages
-        * Question mark for proxy information
     * "text" in brackets
     
 * Medium importance:
@@ -63,6 +61,8 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
         * Logging
         * Channel-specific permissions
     * Showing information about a proxy message
+    * Reactions on messages
+        * Question mark for proxy information
 
 * Low importance:
     * Proxy birthdays
