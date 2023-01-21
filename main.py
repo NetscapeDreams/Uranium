@@ -72,7 +72,7 @@ uranium = commands.Bot(command_prefix=settings.prefixes, intents=intents)
 async def on_ready():
     print(f'[URANIUM] I have logged in as {uranium.user}!')
     
-    game = discord.Game("with proxies! | {0}help".format(settings.prefixes[0]))
+    game = discord.Game("with isotopes! | {0}help".format(settings.prefixes[0]))
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
 @uranium.event
@@ -166,7 +166,7 @@ async def reinit(ctx):
     databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
     databaseExists = os.path.exists(databasePath)
     if databaseExists == True:
-        await ctx.send(":grey_exclamation: *A database under your user ID has been found.*\nIf you would like to re-initalize it, this will **delete all of your current proxies and settings**.\n*Please note that you can export your user data via `{0}export` if you would like to.*\nIf you are sure you want to do this, please do `{0}reinit confirm`.".format(settings.prefixes[0]))
+        await ctx.send(":grey_exclamation: *A database under your user ID has been found.*\nIf you would like to re-initalize it, this will **delete all of your current isotopes and settings**.\n*Please note that you can export your user data via `{0}export` if you would like to.*\nIf you are sure you want to do this, please do `{0}reinit confirm`.".format(settings.prefixes[0]))
     else:
         await ctx.send(":x: *There is nothing to re-initialize.*")
 
@@ -176,16 +176,16 @@ async def confirm(ctx):
     os.remove(databasePath)
     databaseCreation = open(databasePath, "w")
     databaseCreation.close()
-    await ctx.send(":white_check_mark: *Your database has been reinitalized. All former proxies and settings have been deleted.*")
+    await ctx.send(":white_check_mark: *Your database has been reinitalized. All former isotopes and settings have been deleted.*")
 
-@uranium.command(description="register proxy")
+@uranium.command(description="register isotope")
 async def register(ctx, name:str, brackets:str):
     if len(name) > 80:
-        await ctx.send(":x: *Your proxy's name is too long, please keep it equal to or under 80 characters.*")
+        await ctx.send(":x: *Your isotope's name is too long, please keep it equal to or under 80 characters.*")
         return
 
     if "text" in brackets:
-        await ctx.send(":speech_balloon: *I have detected the \"text\" parameter in your proxy's brackets, commonly used by Tupperbox and PluralKit.*\n\nPlease note, Uranium does not support the \"text\" parameter, and you can change your proxy's brackets via the `{0}brackets` command.\n**Registration will continue.**".format(settings.prefixes[0]))
+        await ctx.send(":speech_balloon: *I have detected the \"text\" parameter in your isotope's brackets, commonly used by Tupperbox and PluralKit.*\n\nPlease note, Uranium does not support the \"text\" parameter, and you can change your isotope's brackets via the `{0}brackets` command.\n**Registration will continue.**".format(settings.prefixes[0]))
 
     try:
         avatar = ctx.message.attachments[0]
@@ -198,17 +198,17 @@ async def register(ctx, name:str, brackets:str):
         appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
         appendProxy.write("{0}\t{1}\t{2}\n".format(brackets, name, proxyAvatar))
         appendProxy.close()
-        await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this proxy, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets))
+        await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this isotope, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets))
     elif conflictions == "name":
-        await ctx.send(":x: There already is a proxy with this name in your user data.")
+        await ctx.send(":x: There already is an isotope with this name in your user data.")
     elif conflictions == "brackets":
-        await ctx.send(":x: There already is a proxy with these brackets in your user data.")
+        await ctx.send(":x: There already is an isotope with these brackets in your user data.")
 
-@uranium.command(description="delete a proxy")
+@uranium.command(description="delete an isotope")
 async def remove(ctx, name:str):
     await removeProxy(ctx, name)
 
-@uranium.command(description="set a proxy's avatar")
+@uranium.command(description="set an isotope's avatar")
 async def avatar(ctx, name:str):
     try:
         avatar = ctx.message.attachments[0]
@@ -484,12 +484,13 @@ async def export(ctx):
 @uranium.command()
 async def data(ctx):
     embedVar = discord.Embed(
-    title="{0} and your data.".format(settings.botName), description="What does {0} exactly do with data it obtains?".format(settings.botName), color=0x00fff4
+    title="{0} and your data.".format(settings.botName), description="What does {0} exactly do with data it obtains?".format(settings.botName), color=0x20FD00
             )
-    embedVar.set_footer(text="Last updated November 30th, 2022.")
-    embedVar.add_field(name="User data", value="This bot stores your user ID (this is to help identify which file belongs to who) and the proxies you create via the information you provide.\nThis information is exportable via the bot's export command.", inline=False)
+    embedVar.set_footer(text="Last updated January 21st, 2023.")
+    embedVar.add_field(name="User data", value="This bot stores your user ID (this is to help identify which file belongs to who) and the proxies you create via the information you provide, and your user ID used in message logging for helping determine if you own a proxy message.\nThis information is exportable via the bot's **export** command.", inline=False)
     embedVar.add_field(name="Webhook data", value="This bot stores webhook ID data under a channel ID filename, to help keep a local value for comparison to send proxies via webhooks.", inline=False)
     embedVar.add_field(name="Channel data", value="This bot stores channel IDs as filenames for help in identifying the webhook ID for the channel you are sending the proxy to.", inline=False)
+    embedVar.add_field(name="Guild and message data", value="This bot stores guild (server) IDs as filenames and message IDs for help in message logging, and to determine if the proxy message you sent is in the logs.", inline=False)
     embedVar.add_field(name="Who can see this data?", value="It depends. All information can only be read by the bot host(s), with the exception of user data, which can be viewed at the user's request.", inline=False)
     await ctx.send(embed=embedVar)
 
