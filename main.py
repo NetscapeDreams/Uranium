@@ -76,6 +76,12 @@ async def on_ready():
     await uranium.change_presence(status=discord.Status.online, activity=game)
 
 @uranium.event
+async def on_reaction_add(reaction, user):
+    if reaction.emoji == "❌":
+        ctx = await uranium.get_context(reaction.message)
+        await ctx.invoke(uranium.get_command("delete"), user=user)
+
+@uranium.event
 async def on_message(message):
     # this event will handle autoproxy and multiproxies
 
@@ -399,13 +405,19 @@ async def edit(ctx, *, msg):
                 await ctx.message.delete()
 
 @uranium.command()
-async def delete(ctx):
-    getReply = ctx.message.reference
-    reply = await ctx.fetch_message(getReply.message_id)
-    checkPermission = checkForPermission(ctx, reply.id)
-    if checkPermission == True:
-        await reply.delete()
-        await ctx.message.delete()
+async def delete(ctx, user=False):
+    if user == False:
+        getReply = ctx.message.reference
+        reply = await ctx.fetch_message(getReply.message_id)
+        checkPermission = checkForPermission(ctx, reply.id, ctx.author.id)
+        if checkPermission == True:
+            await reply.delete()
+            await ctx.message.delete()
+    else:
+        checkPermission = checkForPermission(ctx, ctx.message.id, user.id)
+        if checkPermission == True:
+            await ctx.message.delete()
+    
 
 @uranium.command()
 async def export(ctx):
