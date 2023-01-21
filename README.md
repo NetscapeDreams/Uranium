@@ -1,7 +1,7 @@
 # Uranium
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/121664679/212557903-5b82c02d-5ece-48f4-9d8a-15616137367b.png" />
+<img src="https://user-images.githubusercontent.com/121664679/213885228-339ba626-c546-4745-acad-6c7c13415a70.png" />
 </p>
 
 Uranium is a bot whose purpose is for roleplaying and for plurality or system creation, created under Python via the pycord library and under the GNU Affero General Public License version 3.
