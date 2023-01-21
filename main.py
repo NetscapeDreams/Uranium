@@ -378,7 +378,7 @@ async def send(ctx, brackets:str, *, msg):
 async def edit(ctx, *, msg):
     getReply = ctx.message.reference
     replyInformation = await ctx.fetch_message(getReply.message_id)
-    checkPermission = checkForPermission(ctx, replyInformation.id)
+    checkPermission = checkForPermission(ctx, replyInformation.id, ctx.author.id)
     if checkPermission == True:
 
         try:
