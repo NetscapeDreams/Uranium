@@ -131,12 +131,59 @@ def editProxyBrackets(ctx, name, newbrackets):
 
     return ctx.send(":white_check_mark: *Brackets successfully saved.*")
 
-def parseAll(ctx, user):
+def parseAll(ctx, user, search=None, globalSearch=False):
     linesLength = 0
     lineCounter = 0
+    searchLineCounter = 0
     proxyCounter = 0
     groupArray = []
     finalArray = []
+
+    if globalSearch == True:
+        validMemberIDs = []
+        validMatches = []
+        userFiles = []
+        userDirectory = os.listdir("./user-data/")
+        memberList = ctx.guild.members
+        for member in memberList:
+            if member.bot == True:
+                pass
+            else:
+                for file in userDirectory:
+                    if str(member.id) in file:
+                        validMemberIDs.append(member.id)
+        for memberID in validMemberIDs:
+            with open("./user-data/{0}.tsv".format(memberID)) as g:
+                # length check
+                for lineCheck in g:
+                    if lineCheck == "\n":
+                        pass
+                    else:
+                        linesLength += 1
+            with open("./user-data/{0}.tsv".format(memberID)) as f:
+                for line in f:
+                    proxy = line.split("\t")
+                    if line == "\n":
+                        pass
+                    elif proxy[2].endswith("/n") or proxy[2].endswith("\n"):
+                        proxy[2] = proxy[2][:-1]
+                        if search.lower() in proxy[1].lower():
+                            proxy.append(memberID)
+                            validMatches.append(proxy)
+                            searchLineCounter += 1
+        pageCounter = 0
+        for x in validMatches:
+            groupArray.append(x)
+            proxyCounter += 1
+            pageCounter += 1
+            if pageCounter == 5 or proxyCounter == len(validMatches):
+                finalArray.append(groupArray)
+                groupArray = []
+                pageCounter = 0
+
+        return finalArray, searchLineCounter
+
+
     try:
         with open("./user-data/{0}.tsv".format(user.id)) as g:
             # length check
@@ -152,9 +199,15 @@ def parseAll(ctx, user):
                     pass
                 elif proxy[2].endswith("/n") or proxy[2].endswith("\n"):
                     proxy[2] = proxy[2][:-1]
-                    groupArray.append(proxy)
+                    if search != None:
+                        if search.lower() in proxy[1].lower():
+                            groupArray.append(proxy)
+                            searchLineCounter += 1
+                            proxyCounter += 1
+                    else:
+                        groupArray.append(proxy)
+                        proxyCounter += 1
                     lineCounter += 1
-                    proxyCounter += 1
 
                 if proxyCounter == 5 or lineCounter == linesLength:
                     finalArray.append(groupArray)
@@ -164,7 +217,10 @@ def parseAll(ctx, user):
     except IOError:
             return noDatabaseFound(ctx)
     
-    return finalArray, lineCounter
+    if search == None:
+        return finalArray, lineCounter
+    else:
+        return finalArray, searchLineCounter
 
 def checkForPermission(ctx, msgid, userid):
     with open("./message-logs/{0}.tsv".format(ctx.guild.id)) as f:

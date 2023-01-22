@@ -27,9 +27,9 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
 * Purging all data
     * `u.reinit`
 * Proxy Dice Rolls
-    * `u.send Logan I cast fireball for {{2d6+5}} damage!`
+    * `logan:I cast fireball for {{2d6+5}} damage!`
 * Redirecting proxy messages to different channels
-    * `u.send Logan {{#channel}} hey, i'm being sent into a different channel!`
+    * `logan:{{#channel}} hey, i'm being sent into a different channel!`
 * Exporting user data
     * `u.export`
 * Proxies in Threads or Forums
@@ -39,15 +39,17 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * `u.edit`
     * `u.delete`
 * Reactions on messages
-    * X for deletion
+    * :x: for deletion
 * Multiproxies
+* Finding proxies
+    * `u.find`
+    * `u.gfind`
 
 ## What is not possible/planned to be added?
 * High importance:
     * Proxy groups
     * Listing your current proxies in groups
     * Listing specific proxy information
-    * Finding proxies
     * User settings file
         * Who can see your proxies
     

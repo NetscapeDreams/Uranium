@@ -46,6 +46,7 @@ else:
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 async def obtainWebhookData(ctx, channelID):
     # check if channel webhook exists in local database
@@ -193,7 +194,10 @@ async def register(ctx, name:str, brackets:str):
     except:
         proxyAvatar = "*"
 
-    conflictions = checkForConflicts(ctx, name, brackets)
+    if os.path.exists("./user-data/{0}.tsv".format(ctx.message.author.id)) == True:
+        conflictions = checkForConflicts(ctx, name, brackets)
+    else:
+        conflictions = None
     if conflictions == None:
         appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
         appendProxy.write("{0}\t{1}\t{2}\n".format(brackets, name, proxyAvatar))
@@ -493,6 +497,107 @@ async def data(ctx):
     embedVar.add_field(name="Guild and message data", value="This bot stores guild (server) IDs as filenames and message IDs for help in message logging, and to determine if the proxy message you sent is in the logs.", inline=False)
     embedVar.add_field(name="Who can see this data?", value="It depends. All information can only be read by the bot host(s), with the exception of user data, which can be viewed at the user's request.", inline=False)
     await ctx.send(embed=embedVar)
+
+@uranium.command()
+async def find(ctx, *, search):
+    getMember = ctx.message.author
+    proxies, proxyCount = parseAll(ctx, getMember, search) 
+    pageCount = 0
+    embedVar = discord.Embed(
+    description="A total of {0} isotope(s) matches your search. Page 1/{1}.".format(proxyCount, len(proxies))
+            )
+    for x in proxies[0]:
+        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+    msg = await ctx.send(embed=embedVar)
+    await msg.add_reaction("🛑")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+
+    def check(reaction, user):
+        if int(user.id) == int(ctx.author.id):
+            return True
+        else:
+            return False
+
+    while True:
+        try:
+            reaction, user = await uranium.wait_for("reaction_add", timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            break
+        else:
+            userCheck = check("nothing", user)
+            if userCheck == True:
+                if reaction.emoji == '🛑':
+                    await msg.delete()
+                elif reaction.emoji == '⬅️' or reaction.emoji == '➡️':
+                    if reaction.emoji == '➡️':
+                        literalPageCount = pageCount + 1
+                        if literalPageCount == len(proxies):
+                            pageCount = 0
+                        else:
+                            pageCount += 1
+                    else:
+                        if pageCount == 0:
+                            pageCount = len(proxies) - 1
+                        else:
+                            pageCount -= 1
+                    embedVar = discord.Embed(
+                    description="A total of {0} isotope(s) matches your search. Page {1}/{2}.".format(proxyCount, pageCount + 1, len(proxies))
+                            )
+                    for x in proxies[pageCount]:
+                        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+                    await msg.edit(embed=embedVar)
+
+@uranium.command()
+async def gfind(ctx, *, search):
+    proxies, proxyCount = parseAll(ctx, None, search, True) 
+    pageCount = 0
+    embedVar = discord.Embed(
+    description="A total of {0} isotope(s) matches your search. Page 1/{1}.".format(proxyCount, len(proxies))
+            )
+    for x in proxies[0]:
+        proxyMember = ctx.guild.get_member(x[3])
+        embedVar.add_field(name=x[1], value="owned by: {0}\nbrackets: {1}\navatar url: {2}".format(proxyMember.name, x[0], x[2]), inline=False)
+    msg = await ctx.send(embed=embedVar)
+    await msg.add_reaction("🛑")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+
+    def check(reaction, user):
+        if int(user.id) == int(ctx.author.id):
+            return True
+        else:
+            return False
+
+    while True:
+        try:
+            reaction, user = await uranium.wait_for("reaction_add", timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            break
+        else:
+            userCheck = check("nothing", user)
+            if userCheck == True:
+                if reaction.emoji == '🛑':
+                    await msg.delete()
+                elif reaction.emoji == '⬅️' or reaction.emoji == '➡️':
+                    if reaction.emoji == '➡️':
+                        literalPageCount = pageCount + 1
+                        if literalPageCount == len(proxies):
+                            pageCount = 0
+                        else:
+                            pageCount += 1
+                    else:
+                        if pageCount == 0:
+                            pageCount = len(proxies) - 1
+                        else:
+                            pageCount -= 1
+                    embedVar = discord.Embed(
+                    description="A total of {0} isotope(s) matches your search. Page {1}/{2}.".format(proxyCount, pageCount + 1, len(proxies))
+                            )
+                    for x in proxies[pageCount]:
+                        proxyMember = ctx.guild.get_member(x[3])
+                        embedVar.add_field(name=x[1], value="owned by: {0}\nbrackets: {1}\navatar url: {2}".format(proxyMember.name, x[0], x[2]), inline=False)
+                    await msg.edit(embed=embedVar)
 
 f = open("token", "r")
 token = f.read()
