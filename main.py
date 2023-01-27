@@ -90,61 +90,67 @@ async def on_message(message):
 
     settingsPath = "./user-data/{0}.tsv".format(message.author.id)
     if os.path.exists(settingsPath):
+        proxyStart = False
         with open(settingsPath) as f:
-            multiproxyList = []
-            proxyStart = False
+
+            # check if multiproxy is being invoked
             for line in f:
                 proxy = line.split("\t")
-                proxyDetect = "\n{0}".format(proxy[0])
                 if message.content.startswith(proxy[0]):
-                    multiproxyList.append(proxy[0])
                     proxyStart = True
-                if proxyDetect in message.content and proxyStart == True:
-                    multiproxyList.append(proxy[0])
-    
-            if len(multiproxyList) > 0:
 
-                # detect attachments
-                try:
-                    getAttachments = ctx.message.attachments[0]
-                except:
-                    fileAttachments = None
-                else:
-                    fileAttachments = []
-                    for x in ctx.message.attachments:
-                        x = await discord.Attachment.to_file(x)
-                        fileAttachments.append(x)
+        if proxyStart == True:
+            with open(settingsPath) as f:
+                multiproxyList = []
+                # search for other proxies being used
+                for line in f:
+                    proxy = line.split("\t")
+                    if proxy[0] in message.content:
+                        multiproxyList.append(proxy[0])
+        
+                if len(multiproxyList) > 0:
 
-                # detect a reply
-                try:
-                    getReply = ctx.message.reference
-                    replyInformation = await ctx.fetch_message(getReply.message_id)
-                except:
-                    replyInformation = None
-
-                rawLines = message.content.split("\n")
-                lineCount = message.content.count("\n") + 1
-                finishedLine = ""
-                currentBrackets = ""
-                firstMessage = True
-                firstMessage2 = True # for images and reply information
-                for x in range(lineCount):
-                    for proxy in multiproxyList:
-                        if proxy in rawLines[x]:
-                            if firstMessage == False:
-                                if firstMessage2 == True:
-                                    await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True, replyInformation=replyInformation, fileAttachments=fileAttachments)
-                                    firstMessage2 = False
-                                else:
-                                    await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True)
-                            finishedLine = rawLines[x][(len(proxy)):]
-                            currentBrackets = proxy
-                            firstMessage = False
-                            break
+                    # detect attachments
+                    try:
+                        getAttachments = ctx.message.attachments[0]
+                    except:
+                        fileAttachments = None
                     else:
-                        finishedLine += "\n{0}".format(rawLines[x])
-                else:
-                    await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, replyInformation=replyInformation, fileAttachments=fileAttachments)
+                        fileAttachments = []
+                        for x in ctx.message.attachments:
+                            x = await discord.Attachment.to_file(x)
+                            fileAttachments.append(x)
+
+                    # detect a reply
+                    try:
+                        getReply = ctx.message.reference
+                        replyInformation = await ctx.fetch_message(getReply.message_id)
+                    except:
+                        replyInformation = None
+
+                    rawLines = message.content.split("\n")
+                    lineCount = message.content.count("\n") + 1
+                    finishedLine = ""
+                    currentBrackets = ""
+                    firstMessage = True
+                    firstMessage2 = True # for images and reply information
+                    for x in range(lineCount):
+                        for proxy in multiproxyList:
+                            if proxy in rawLines[x]:
+                                if firstMessage == False:
+                                    if firstMessage2 == True:
+                                        await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True, replyInformation=replyInformation, fileAttachments=fileAttachments)
+                                        firstMessage2 = False
+                                    else:
+                                        await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True)
+                                finishedLine = rawLines[x][(len(proxy)):]
+                                currentBrackets = proxy
+                                firstMessage = False
+                                break
+                        else:
+                            finishedLine += "\n{0}".format(rawLines[x])
+                    else:
+                        await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, replyInformation=replyInformation, fileAttachments=fileAttachments)
 
     await uranium.process_commands(message)
 
