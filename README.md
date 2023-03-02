@@ -1,7 +1,7 @@
 # Uranium
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/121664679/212557903-5b82c02d-5ece-48f4-9d8a-15616137367b.png" />
+<img src="https://user-images.githubusercontent.com/121664679/213885228-339ba626-c546-4745-acad-6c7c13415a70.png" />
 </p>
 
 Uranium is a bot whose purpose is for roleplaying and for plurality or system creation, created under Python via the pycord library and under the GNU Affero General Public License version 3.
@@ -14,43 +14,48 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
 
 ## What is currently possible as of now?
 * Registering and removing proxies
-    * `u.proxy register`
-    * `u.proxy remove`
+    * `u.register`
+    * `u.remove`
 * Listing proxies owned by you or others
-    * `u.proxy list`
+    * `u.list`
 * Changing proxy information
-    * `u.proxy avatar`
-    * `u.proxy rename`
-    * `u.proxy brackets`
-* Sending proxy messages
-    * `u.proxy send`
+    * `u.avatar`
+    * `u.rename`
+    * `u.brackets`
+* Sending proxy messages via brackets
     * `logan:hello!`
 * Purging all data
     * `u.reinit`
 * Proxy Dice Rolls
-    * `u.proxy send Logan I cast fireball for {{2d6+5}} damage!`
+    * `logan:I cast fireball for {{2d6+5}} damage!`
 * Redirecting proxy messages to different channels
-    * `u.proxy send Logan {{#channel}} hey, i'm being sent into a different channel!`
+    * `logan:{{#channel}} hey, i'm being sent into a different channel!`
 * Exporting user data
     * `u.export`
 * Proxies in Threads or Forums
 * Sending images or files under a proxy
 * Replying using proxies
+* Editing/deleting proxy messages
+    * `u.edit`
+    * `u.delete`
+* Reactions on messages
+    * :x: for deletion
+    * :question: for message information
+* Multiproxies
+* Finding proxies
+    * `u.find`
+    * `u.gfind`
+* Listing specific proxy information
+    * `u.isotope`
+* Showing information about a proxy message
+    * `u.showmsg`
 
 ## What is not possible/planned to be added?
 * High importance:
     * Proxy groups
     * Listing your current proxies in groups
-    * Listing specific proxy information
-    * Finding proxies
     * User settings file
         * Who can see your proxies
-    * Multiproxies
-    * Editing proxy messages
-    * Reactions on messages
-        * X for deletion
-        * Pencil for editing
-        * Question mark for proxy information
     
 * Medium importance:
     * Importing user data
@@ -59,7 +64,6 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
         * Specific prefixes per server
         * Logging
         * Channel-specific permissions
-    * Showing information about a proxy message
 
 * Low importance:
     * Proxy birthdays

@@ -1,4 +1,5 @@
 token
 user-data/*
 webhook-data/*
+message-logs/*
 __pycache__/*
