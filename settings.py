@@ -19,10 +19,10 @@ botName = "Uranium"
 # - user id of who sent the proxy
 # - proxy brackets
 # get stored into a message.log file for later use, and the log file is only checked when the methods above are used.
-# should Uranium keep a persistant log file for every single time it used a webhook, or do you want it cleared every time Uranium starts?
+# should Uranium keep a persistent log file for every single time it used a webhook, or do you want it cleared every time Uranium starts?
 # persistance is recommended, but if you have a small storage space/large discord server, it's probably better to use perSession.
 
-messageLogging = "persistant" # persistant or perSession
+messageLogging = "persistent" # persistent or perSession
 
 # settings below do nothing, they're just placeholders for now
 
