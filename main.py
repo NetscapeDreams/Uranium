@@ -42,7 +42,7 @@ if settings.messageLogging == "perSession":
     for f in os.listdir("./message-logs/"):
         os.remove(os.path.join("./message-logs/", f))
 else:
-    print("[LOGGING] Persistant messaging logging on.")
+    print("[LOGGING] Persistent messaging logging on.")
 
 intents = discord.Intents.default()
 intents.message_content = True
