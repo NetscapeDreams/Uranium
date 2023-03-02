@@ -78,9 +78,12 @@ async def on_ready():
 
 @uranium.event
 async def on_reaction_add(reaction, user):
-    if reaction.emoji == "❌":
-        ctx = await uranium.get_context(reaction.message)
-        await ctx.invoke(uranium.get_command("delete"), user=user)
+    ctx = await uranium.get_context(reaction.message)
+    if (ctx.author.bot):
+        if reaction.emoji == "❌":
+            await ctx.invoke(uranium.get_command("delete"), user=user)
+        if reaction.emoji == "❓":
+            await ctx.invoke(uranium.get_command("showmsg"), user=user)
 
 @uranium.event
 async def on_message(message):
@@ -604,6 +607,56 @@ async def gfind(ctx, *, search):
                         proxyMember = ctx.guild.get_member(x[3])
                         embedVar.add_field(name=x[1], value="owned by: {0}\nbrackets: {1}\navatar url: {2}".format(proxyMember.name, x[0], x[2]), inline=False)
                     await msg.edit(embed=embedVar)
+
+@uranium.command()
+async def showmsg(ctx, user=None):
+    if user == None:
+        getReply = ctx.message.reference
+        reply = await ctx.fetch_message(getReply.message_id)
+        try:
+            userID, brackets = showProxyMessage(ctx, reply.id)
+        except:
+            return
+        if userID != False:
+            proxyName, proxyAvatar = parseProxy(ctx, brackets.strip(), userID)
+            embedVar = discord.Embed(
+            title="Show Message", color=0x20FD00
+                    )
+            embedVar.set_thumbnail(url=proxyAvatar)
+            embedVar.add_field(name="Isotope Information", value="Name: {0}\nBrackets: {1}\nAvatar: {2}".format(proxyName, brackets.strip(), proxyAvatar), inline=False)
+            embedVar.add_field(name="User Information", value="This proxy was sent by:\nID: {0}\nUser: <@{0}>".format(userID), inline=False)
+            embedVar.set_footer(text="Message ID: {0}".format(reply))
+            await ctx.send(embed=embedVar)
+    else:
+        try:
+            userID, brackets = showProxyMessage(ctx, ctx.message.id)
+        except:
+            return
+        await ctx.message.remove_reaction("❓", user)
+        if userID != False:
+            proxyName, proxyAvatar = parseProxy(ctx, brackets.strip(), userID)
+            dmChannel = await user.create_dm()
+            embedVar = discord.Embed(
+            title="Show Message", color=0x20FD00
+                    )
+            embedVar.set_thumbnail(url=proxyAvatar)
+            embedVar.add_field(name="Isotope Information", value="Name: {0}\nBrackets: {1}\nAvatar: {2}".format(proxyName, brackets.strip(), proxyAvatar), inline=False)
+            embedVar.add_field(name="User Information", value="This proxy was sent by:\nID: {0}\nUser: <@{0}>".format(userID), inline=False)
+            embedVar.add_field(name="Message Content", value=ctx.message.content, inline=False)
+            embedVar.set_footer(text="Message ID: {0}".format(ctx.message.id))
+            await dmChannel.send("Here's that information you wanted.", embed=embedVar)
+
+
+
+@uranium.command()
+async def isotope(ctx, *, name):
+    isotope = parseProxyByName(ctx, name.strip("\""))
+    embedVar = discord.Embed(
+    title="Show Isotope", color=0x20FD00
+            )
+    embedVar.set_thumbnail(url=isotope[2])
+    embedVar.add_field(name="Isotope Information", value="Name: {0}\nBrackets: {1}\nAvatar: {2}".format(isotope[1], isotope[0], isotope[2]), inline=False)
+    await ctx.send(embed=embedVar)
 
 f = open("token", "r")
 token = f.read()

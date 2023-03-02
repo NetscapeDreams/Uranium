@@ -40,16 +40,20 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
     * `u.delete`
 * Reactions on messages
     * :x: for deletion
+    * :question: for message information
 * Multiproxies
 * Finding proxies
     * `u.find`
     * `u.gfind`
+* Listing specific proxy information
+    * `u.isotope`
+* Showing information about a proxy message
+    * `u.showmsg`
 
 ## What is not possible/planned to be added?
 * High importance:
     * Proxy groups
     * Listing your current proxies in groups
-    * Listing specific proxy information
     * User settings file
         * Who can see your proxies
     
@@ -60,9 +64,6 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
         * Specific prefixes per server
         * Logging
         * Channel-specific permissions
-    * Showing information about a proxy message
-    * Reactions on messages
-        * Question mark for proxy information
 
 * Low importance:
     * Proxy birthdays

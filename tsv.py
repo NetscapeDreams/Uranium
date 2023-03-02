@@ -72,12 +72,21 @@ def setProxyAvatar(ctx, name, avatar):
 
     return ctx.send(":white_check_mark: *Avatar successfully saved.*\nPlease note, if the image you specified gets deleted, then your proxy's avatar will no longer work.")
 
-def parseProxy(ctx, brackets):
-    with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+def parseProxy(ctx, brackets, userid=None):
+    if userid == None:
+        userid = ctx.message.author.id
+    with open("./user-data/{0}.tsv".format(userid)) as f:
         for line in f:
             proxy = line.split("\t")
             if proxy[0] == brackets:
                 return proxy[1], proxy[2].strip()
+            
+def parseProxyByName(ctx, name):
+    with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
+        for line in f:
+            proxy = line.split("\t")
+            if proxy[1] == name:
+                return proxy
 
 def editProxyName(ctx, oldname, newname):
     editedLine = 0
@@ -242,3 +251,12 @@ def checkForConflicts(ctx, name, brackets):
                 return "name"
         else:
             return None
+
+def showProxyMessage(ctx, msgid):
+    with open("./message-logs/{0}.tsv".format(ctx.guild.id)) as f:
+        for line in f:
+            message = line.split("\t")
+            if message[0] == str(msgid):
+                return message[1], message[2]
+        else:
+            return False
