@@ -207,6 +207,12 @@ async def register(ctx, name:str, brackets:str):
         conflictions = checkForConflicts(ctx, name, brackets)
     else:
         conflictions = None
+        appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
+        appendProxy.write("{0}\t{1}\t{2}".format(brackets, name, proxyAvatar))
+        appendProxy.close()
+        await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this isotope, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets))
+        return
+
     if conflictions == None:
         appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
         appendProxy.write("\n{0}\t{1}\t{2}".format(brackets, name, proxyAvatar))
