@@ -29,7 +29,11 @@ def removeProxy(ctx, name):
     x.writelines(filesaver)
     x.close()
 
-    return ctx.send(":white_check_mark: {0} has been removed from your proxy list.".format(name))
+    if os.stat('./user-data/{0}.tsv'.format(ctx.message.author.id)).st_size == 0:
+        os.remove('./user-data/{0}.tsv'.format(ctx.message.author.id))
+        return ctx.send(":white_check_mark: {0} has been removed from your proxy list, and since you no longer have any more isotopes, your user data file has been deleted.".format(name))
+    else:
+        return ctx.send(":white_check_mark: {0} has been removed from your proxy list.".format(name))
 
 def getProxyAvatar(ctx, name):
     try:
@@ -243,12 +247,24 @@ def checkForPermission(ctx, msgid, userid):
 
 def checkForConflicts(ctx, name, brackets):
     with open("./user-data/{0}.tsv".format(ctx.author.id)) as f:
+        editedLine = 0
         for line in f:
             proxy = line.split("\t")
-            if proxy[0] == brackets:
-                return "brackets"
-            if proxy[1] == name:
-                return "name"
+            try:
+                if proxy[0] == brackets:
+                    return "brackets"
+                if proxy[1] == name:
+                    return "name"
+                editedLine = editedLine + 1
+            except IndexError:
+                f = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'r')
+                filesaver = f.readlines()
+                filesaver[editedLine] = ""
+                f.close()
+
+                x = open("./user-data/{0}.tsv".format(ctx.message.author.id), 'w')
+                x.writelines(filesaver)
+                x.close()
         else:
             return None
 
