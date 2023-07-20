@@ -210,8 +210,9 @@ def parseAll(ctx, user, search=None, globalSearch=False):
                 proxy = line.split("\t")
                 if line == "\n":
                     pass
-                elif proxy[2].endswith("/n") or proxy[2].endswith("\n"):
-                    proxy[2] = proxy[2][:-1]
+                else:
+                    if proxy[2].endswith("/n") or proxy[2].endswith("\n"):
+                        proxy[2] = proxy[2][:-1]
                     if search != None:
                         if search.lower() in proxy[1].lower():
                             groupArray.append(proxy)
