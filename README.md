@@ -15,7 +15,7 @@ If it's just not your cup of tea yet, that's okay! Maybe you should come back la
 ## What is currently possible as of now?
 * Registering and removing proxies
     * `u.register`
-    * `u.remove`
+    * `u.unregister`
 * Listing proxies owned by you or others
     * `u.list`
 * Changing proxy information

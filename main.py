@@ -224,7 +224,7 @@ async def register(ctx, name:str, brackets:str):
         await ctx.send(":x: There already is an isotope with these brackets in your user data.")
 
 @uranium.command(description="delete an isotope")
-async def remove(ctx, name:str):
+async def unregister(ctx, name:str):
     await removeProxy(ctx, name)
 
 @uranium.command(description="set an isotope's avatar")
