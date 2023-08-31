@@ -1,7 +1,7 @@
 def buildSendCommand(msg, username, avatar, detectThread, sendToThread, redirect, embeds=None, attachments=None):
     baseCommand = "wh.send(msg, username=name"
 
-    if avatar == "*":
+    if avatar == "N/A":
         pass
     else:
         baseCommand = baseCommand + ", avatar_url=avtr"

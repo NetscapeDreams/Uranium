@@ -6,8 +6,10 @@ from random import randint
 from discord.ext import commands
 from discord import Webhook
 
-# import tsv editing commands
-from tsv import *
+# import editing commands
+from tsv import * # tsv is still used for message logs
+from jsondata import *
+import json
 
 # import webhook send command builder
 from webhook import buildSendCommand
@@ -91,80 +93,74 @@ async def on_message(message):
 
     ctx = await uranium.get_context(message)
 
-    settingsPath = "./user-data/{0}.tsv".format(message.author.id)
-    if os.path.exists(settingsPath):
+    if os.path.exists("./user-data/{0}.json".format(ctx.message.author.id)):
+        datafile = loadData(ctx.message.author.id)
         proxyStart = False
-        with open(settingsPath) as f:
-
-            # check if multiproxy is being invoked
-            for line in f:
-                proxy = line.split("\t")
-                if message.content.startswith(proxy[0]):
-                    proxyStart = True
+        
+        # check if multiproxy is being invoked
+        for key, value in datafile["isotopes"].items():
+            if message.content.startswith(key):
+                proxyStart = True
 
         if proxyStart == True:
-            with open(settingsPath) as f:
-                multiproxyList = []
-                # search for other proxies being used
-                for line in f:
-                    proxy = line.split("\t")
-                    if proxy[0] in message.content:
-                        multiproxyList.append(proxy[0])
-        
-                if len(multiproxyList) > 0:
+            multiproxyList = []
+            # search for other proxies being used
+            for key, value in datafile["isotopes"].items():
+                if key in message.content:
+                    multiproxyList.append(key)
 
-                    # detect attachments
-                    try:
-                        getAttachments = ctx.message.attachments[0]
-                    except:
-                        fileAttachments = None
-                    else:
-                        fileAttachments = []
-                        for x in ctx.message.attachments:
-                            x = await discord.Attachment.to_file(x)
-                            fileAttachments.append(x)
+            # detect attachments
+            try:
+                getAttachments = ctx.message.attachments[0]
+            except:
+                fileAttachments = None
+            else:
+                fileAttachments = []
+                for x in ctx.message.attachments:
+                    x = await discord.Attachment.to_file(x)
+                    fileAttachments.append(x)
 
-                    # detect a reply
-                    try:
-                        getReply = ctx.message.reference
-                        replyInformation = await ctx.fetch_message(getReply.message_id)
-                    except:
-                        replyInformation = None
+            # detect a reply
+            try:
+                getReply = ctx.message.reference
+                replyInformation = await ctx.fetch_message(getReply.message_id)
+            except:
+                replyInformation = None
 
-                    rawLines = message.content.split("\n")
-                    lineCount = message.content.count("\n") + 1
-                    finishedLine = ""
-                    currentBrackets = ""
-                    firstMessage = True
-                    firstMessage2 = True # for images and reply information
-                    for x in range(lineCount):
-                        for proxy in multiproxyList:
-                            if proxy in rawLines[x]:
-                                if firstMessage == False:
-                                    if firstMessage2 == True:
-                                        await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True, replyInformation=replyInformation, fileAttachments=fileAttachments)
-                                        firstMessage2 = False
-                                    else:
-                                        await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True)
-                                finishedLine = rawLines[x][(len(proxy)):]
-                                currentBrackets = proxy
-                                firstMessage = False
-                                break
-                        else:
-                            finishedLine += "\n{0}".format(rawLines[x])
-                    else:
-                        await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, replyInformation=replyInformation, fileAttachments=fileAttachments)
+            rawLines = message.content.split("\n")
+            lineCount = message.content.count("\n") + 1
+            finishedLine = ""
+            currentBrackets = ""
+            firstMessage = True
+            firstMessage2 = True # for images and reply information
+            for x in range(lineCount):
+                for proxy in multiproxyList:
+                    if proxy in rawLines[x]:
+                        if firstMessage == False:
+                            if firstMessage2 == True:
+                                await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True, replyInformation=replyInformation, fileAttachments=fileAttachments)
+                                firstMessage2 = False
+                            else:
+                                await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, multiProxy=True)
+                        finishedLine = rawLines[x][(len(proxy)):]
+                        currentBrackets = proxy
+                        firstMessage = False
+                        break
+                else:
+                    finishedLine += "\n{0}".format(rawLines[x])
+            else:
+                await ctx.invoke(uranium.get_command("send"), brackets=currentBrackets, msg=finishedLine, replyInformation=replyInformation, fileAttachments=fileAttachments)
 
     await uranium.process_commands(message)
 
 @uranium.command()
 async def about(ctx):
     embedVar = discord.Embed(
-    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0xC71203
+    title="About {0}".format(settings.botName), description="{0} is a Discord bot that is used for roleplay and for use in systems/plurality.".format(settings.botName), color=0xffff66
             )
     if settings.modified == True:
         embedVar.add_field(name="Warning:", value="*The owner of this bot has enabled the modified variable, which means this bot's code has been modified and put up for public use. A valid respository link for this code will be provided at the bottom.*", inline=False)
-    embedVar.set_footer(text="Created by NetscapeDreams. // Americium-223 Release [v0.3.1]")
+    embedVar.set_footer(text="Created by NetscapeDreams. // Curium Release [v0.4.0]")
     embedVar.set_image(url="https://user-images.githubusercontent.com/121664679/213885228-339ba626-c546-4745-acad-6c7c13415a70.png")
     embedVar.add_field(name="Did you know the bot is open source?", value="That means **anyone** can view the source code, or how the bot works. You can change/add/remove what you want, and self host your own {0} instance. But remember, if you distribute your personal code, you **must** follow the terms and conditions of the GNU Affero General Public Licence v3.".format(settings.botName), inline=False)
     embedVar.add_field(name="GNU Affero General Public License v3", value="https://www.gnu.org/licenses/agpl-3.0.html", inline=False)
@@ -173,20 +169,22 @@ async def about(ctx):
 
 @uranium.group(invoke_without_command=True)
 async def reinit(ctx):
-    databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
+    databasePath = "./user-data/{0}.json".format(ctx.message.author.id)
     databaseExists = os.path.exists(databasePath)
     if databaseExists == True:
-        await ctx.send(":grey_exclamation: *A database under your user ID has been found.*\nIf you would like to re-initalize it, this will **delete all of your current isotopes and settings**.\n*Please note that you can export your user data via `{0}export` if you would like to.*\nIf you are sure you want to do this, please do `{0}reinit confirm`.".format(settings.prefixes[0]))
+        await ctx.send(":grey_exclamation: *A database under your user ID has been found.*\nIf you would like to delete it, this will **remove all of your current isotopes and settings**.\n*Please note that you can export your user data via `{0}export` if you would like to.*\nIf you are sure you want to do this, please do `{0}reinit confirm`.".format(settings.prefixes[0]))
     else:
-        await ctx.send(":x: *There is nothing to re-initialize.*")
+        await ctx.send(":x: *There is nothing to delete.*")
 
 @reinit.command()
 async def confirm(ctx):
-    databasePath = "./user-data/{0}.tsv".format(ctx.message.author.id)
-    os.remove(databasePath)
-    databaseCreation = open(databasePath, "w")
-    databaseCreation.close()
-    await ctx.send(":white_check_mark: *Your database has been reinitalized. All former isotopes and settings have been deleted.*")
+    databasePath = "./user-data/{0}.json".format(ctx.message.author.id)
+    databaseExists = os.path.exists(databasePath)
+    if databaseExists == True:
+        os.remove(databasePath)
+        await ctx.send(":white_check_mark: *Your database has been deleted. All former isotopes and settings have been removed from my user data folder.*")
+    else:
+        await ctx.send(":x: *There is nothing to delete.*")
 
 @uranium.command(description="register isotope")
 async def register(ctx, name:str, brackets:str):
@@ -201,27 +199,9 @@ async def register(ctx, name:str, brackets:str):
         avatar = ctx.message.attachments[0]
         proxyAvatar = avatar.url
     except:
-        proxyAvatar = "*"
+        proxyAvatar = "N/A"
 
-    if os.path.exists("./user-data/{0}.tsv".format(ctx.message.author.id)) == True:
-        conflictions = checkForConflicts(ctx, name, brackets)
-    else:
-        conflictions = None
-        appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
-        appendProxy.write("{0}\t{1}\t{2}".format(brackets, name, proxyAvatar))
-        appendProxy.close()
-        await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this isotope, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets))
-        return
-
-    if conflictions == None:
-        appendProxy = open("./user-data/{0}.tsv".format(ctx.message.author.id), "a")
-        appendProxy.write("\n{0}\t{1}\t{2}".format(brackets, name, proxyAvatar))
-        appendProxy.close()
-        await ctx.send("Wonderful! `{0}` has been created under your user data using the brackets `{1}`.\nTo send a message via this isotope, you can just use the brackets. `{1}I'm a proxy!`".format(name, brackets))
-    elif conflictions == "name":
-        await ctx.send(":x: There already is an isotope with this name in your user data.")
-    elif conflictions == "brackets":
-        await ctx.send(":x: There already is an isotope with these brackets in your user data.")
+    await registerProxy(ctx, brackets, name, proxyAvatar)
 
 @uranium.command(description="delete an isotope")
 async def unregister(ctx, name:str):
@@ -231,32 +211,9 @@ async def unregister(ctx, name:str):
 async def avatar(ctx, name:str):
     try:
         avatar = ctx.message.attachments[0]
+        await proxyAvatar(ctx, name, avatar)
     except:
-        await getProxyAvatar(ctx, name)
-    
-    await setProxyAvatar(ctx, name, avatar)
-
-@uranium.command(description="mainly for debugging", aliases=["whs"])
-async def webhookstatus(ctx):
-    direc = os.listdir("./webhook-data/")
-    for file in direc:
-        if str(ctx.channel.id) in file:
-            webhookRead = open("./webhook-data/{0}".format(str(ctx.channel.id), "r"))
-            webhookID = webhookRead.read()
-            webhookRead.close()
-            await ctx.send(":white_check_mark: Webhook ID of `{0}` for this channel is present in my local database.".format(str(webhookID)))
-            break
-    else:
-        await ctx.send(":x: I do not have a local webhook database entry for this channel.")
-
-    webhookList = await ctx.message.channel.webhooks()
-    try:
-        for wh in webhookList:
-           if str(webhookID) == str(wh):
-               await ctx.send(":white_check_mark: My local webhook database entry for this channel was found in this channel's webhook list.")
-               return
-    except:
-        await ctx.send(":x: My local webhook database did not find a match in this channel's webhook list.")
+        await proxyAvatar(ctx, name)
 
 @uranium.command()
 async def rename(ctx, oldname, newname):
@@ -264,30 +221,27 @@ async def rename(ctx, oldname, newname):
 
 @uranium.command()
 async def brackets(ctx, name, newbrackets=None):
-    if newbrackets == None:
-        with open("./user-data/{0}.tsv".format(ctx.message.author.id)) as f:
-            for line in f:
-                proxy = line.split("\t")
-                if proxy[1] == name:
-                    await ctx.send("The brackets for {0} are `{1}`.".format(name, proxy[0]))
-    else:
-        await editProxyBrackets(ctx, name, newbrackets)
+    await editProxyBrackets(ctx, name, newbrackets)
 
 @uranium.command()
 async def list(ctx, member: discord.Member=None):
     if member == None:
         member = ctx.message.author
-    pageCount = 0
     proxies, proxyCount = parseAll(ctx, member)
+    if proxies == None:
+        await ctx.send(":x: This user does not have any isotopes.")
+        return
     embedVar = discord.Embed(
     title="{0}'s Isotopes".format(member.name), description="{0} has a total of {1} isotopes. Page 1/{2}.".format(member.name, proxyCount, len(proxies))
             )
-    for x in proxies[0]:
-        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+    embedVar.set_footer(text="You have 1 minute to respond to this message in-between reactions.")
+    for key, value in proxies[1].items():
+        embedVar.add_field(name=proxies[1][key]["name"], value="brackets: {0}\navatar url: {1}".format(key, proxies[1][key]["avatar"]), inline=False)
     msg = await ctx.send(embed=embedVar)
     await msg.add_reaction("🛑")
-    await msg.add_reaction("⬅️")
-    await msg.add_reaction("➡️")
+    if 2 in proxies:
+        await msg.add_reaction("⬅️")
+        await msg.add_reaction("➡️")
 
     def check(reaction, user):
         if int(user.id) == int(ctx.author.id):
@@ -295,33 +249,40 @@ async def list(ctx, member: discord.Member=None):
         else:
             return False
 
+    pageCount = 1
     while True:
         try:
             reaction, user = await uranium.wait_for("reaction_add", timeout=60.0, check=check)
         except asyncio.TimeoutError:
+            embedVar.set_footer(text="Message timeout. You can no longer interact with this message.")
+            await msg.edit(embed=embedVar)
             break
         else:
             userCheck = check("nothing", user)
             if userCheck == True:
                 if reaction.emoji == '🛑':
-                    await msg.delete()
+                    try:
+                        await msg.delete()
+                    except discord.errors.NotFound:
+                        pass
+                    break
                 elif reaction.emoji == '⬅️' or reaction.emoji == '➡️':
                     if reaction.emoji == '➡️':
-                        literalPageCount = pageCount + 1
-                        if literalPageCount == len(proxies):
-                            pageCount = 0
+                        if pageCount + 1 > len(proxies):
+                            pass
                         else:
                             pageCount += 1
-                    else:
-                        if pageCount == 0:
-                            pageCount = len(proxies) - 1
+                    elif reaction.emoji == '⬅️':
+                        if pageCount - 1 == 0:
+                            pass
                         else:
                             pageCount -= 1
                     embedVar = discord.Embed(
-                    title="{0}'s Isotopes".format(member.name), description="{0} has a total of {1} isotopes. Page {2}/{3}.".format(member.name, proxyCount, pageCount + 1, len(proxies))
+                    title="{0}'s Isotopes".format(member.name), description="{0} has a total of {1} isotopes. Page {2}/{3}.".format(member.name, proxyCount, pageCount, len(proxies))
                             )
-                    for x in proxies[pageCount]:
-                        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+                    embedVar.set_footer(text="You have 1 minute to respond to this message in-between reactions.")
+                    for key, value in proxies[pageCount].items():
+                        embedVar.add_field(name=proxies[pageCount][key]["name"], value="brackets: {0}\navatar url: {1}".format(key, proxies[pageCount][key]["avatar"]), inline=False)
                     await msg.edit(embed=embedVar)
 
 @uranium.command(aliases=["s"])
@@ -487,18 +448,17 @@ async def delete(ctx, user=None):
 
 @uranium.command()
 async def export(ctx):
-    try:
-        if os.stat('./user-data/{0}.tsv'.format(ctx.author.id)).st_size == 0:
-            await ctx.send(":x: *Why would I send a blank user data file?*")
-        else:
-            dmChannel = await ctx.author.create_dm()
-            try:
-                await dmChannel.send("**Hi, {0}!** :wave:\nHere is your user data file you requested.\nOh, and please note: user data importing is not supported at the moment, so all you can really do is view your data. Sorry :(".format(ctx.author.name), file=discord.File(r'./user-data/{0}.tsv'.format(ctx.author.id)))
-                await ctx.message.add_reaction("✅")
-            except discord.errors.Forbidden:
-                await ctx.send(":x: *I was not able to message you, please allow server DMs so that I can send your user data file privately.*")
-    except FileNotFoundError:
-        await ctx.send(":x: *I could not find a user data file with your user ID. I think you should create your file first before exporting it.*")
+    databasePath = "./user-data/{0}.json".format(ctx.message.author.id)
+    databaseExists = os.path.exists(databasePath)
+    if databaseExists == True:
+        dmChannel = await ctx.author.create_dm()
+        try:
+            await dmChannel.send("**Hi, {0}!** :wave:\nHere is your user data file you requested.\nOh, and please note: user data importing is not supported at the moment, so all you can really do is view your data. Sorry :(".format(ctx.author.name), file=discord.File(r'./user-data/{0}.json'.format(ctx.author.id)))
+            await ctx.message.add_reaction("✅")
+        except discord.errors.Forbidden:
+            await ctx.send(":x: *I was not able to message you, please allow server DMs so that I can send your user data file privately.*")
+    else:
+        await ctx.send(":x: *There is nothing to export.*")
 
 @uranium.command()
 async def data(ctx):
@@ -514,19 +474,26 @@ async def data(ctx):
     await ctx.send(embed=embedVar)
 
 @uranium.command()
-async def find(ctx, *, search):
+async def find(ctx, *, search=None):
+    if search == None:
+        await ctx.send(":x: Please provide a search term to use.")
+        return
     getMember = ctx.message.author
     proxies, proxyCount = parseAll(ctx, getMember, search) 
-    pageCount = 0
+    if proxies == None:
+        await ctx.send(":x: You do not have any isotopes to search through.")
+        return
     embedVar = discord.Embed(
     description="A total of {0} isotope(s) matches your search. Page 1/{1}.".format(proxyCount, len(proxies))
             )
-    for x in proxies[0]:
-        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+    embedVar.set_footer(text="You have 1 minute to respond to this message in-between reactions.")
+    for key, value in proxies[1].items():
+        embedVar.add_field(name=proxies[1][key]["name"], value="brackets: {0}\navatar url: {1}".format(key, proxies[1][key]["avatar"]), inline=False)
     msg = await ctx.send(embed=embedVar)
     await msg.add_reaction("🛑")
-    await msg.add_reaction("⬅️")
-    await msg.add_reaction("➡️")
+    if 2 in proxies:
+        await msg.add_reaction("⬅️")
+        await msg.add_reaction("➡️")
 
     def check(reaction, user):
         if int(user.id) == int(ctx.author.id):
@@ -534,49 +501,60 @@ async def find(ctx, *, search):
         else:
             return False
 
+    pageCount = 1
     while True:
         try:
             reaction, user = await uranium.wait_for("reaction_add", timeout=60.0, check=check)
         except asyncio.TimeoutError:
+            embedVar.set_footer(text="Message timeout. You can no longer interact with this message.")
+            await msg.edit(embed=embedVar)
             break
         else:
             userCheck = check("nothing", user)
             if userCheck == True:
                 if reaction.emoji == '🛑':
-                    await msg.delete()
+                    try:
+                        await msg.delete()
+                    except discord.errors.NotFound:
+                        pass
+                    break
                 elif reaction.emoji == '⬅️' or reaction.emoji == '➡️':
                     if reaction.emoji == '➡️':
-                        literalPageCount = pageCount + 1
-                        if literalPageCount == len(proxies):
-                            pageCount = 0
+                        if pageCount + 1 > len(proxies):
+                            pass
                         else:
                             pageCount += 1
-                    else:
-                        if pageCount == 0:
-                            pageCount = len(proxies) - 1
+                    elif reaction.emoji == '⬅️':
+                        if pageCount - 1 == 0:
+                            pass
                         else:
                             pageCount -= 1
                     embedVar = discord.Embed(
-                    description="A total of {0} isotope(s) matches your search. Page {1}/{2}.".format(proxyCount, pageCount + 1, len(proxies))
+                    description="A total of {0} isotope(s) matches your search. Page {1}/{2}.".format(proxyCount, pageCount, len(proxies))
                             )
-                    for x in proxies[pageCount]:
-                        embedVar.add_field(name=x[1], value="brackets: {0}\navatar url: {1}".format(x[0], x[2]), inline=False)
+                    embedVar.set_footer(text="You have 1 minute to respond to this message in-between reactions.")
+                    for key, value in proxies[pageCount].items():
+                        embedVar.add_field(name=proxies[pageCount][key]["name"], value="brackets: {0}\navatar url: {1}".format(key, proxies[pageCount][key]["avatar"]), inline=False)
                     await msg.edit(embed=embedVar)
 
 @uranium.command()
-async def gfind(ctx, *, search):
+async def gfind(ctx, *, search=None):
+    if search == None:
+        await ctx.send(":x: Please provide a search term to use.")
+        return
     proxies, proxyCount = parseAll(ctx, None, search, True) 
-    pageCount = 0
     embedVar = discord.Embed(
     description="A total of {0} isotope(s) matches your search. Page 1/{1}.".format(proxyCount, len(proxies))
             )
-    for x in proxies[0]:
-        proxyMember = ctx.guild.get_member(x[3])
-        embedVar.add_field(name=x[1], value="owned by: {0}\nbrackets: {1}\navatar url: {2}".format(proxyMember.name, x[0], x[2]), inline=False)
+    embedVar.set_footer(text="You have 1 minute to respond to this message in-between reactions.")
+    for key, value in proxies[1].items():
+        proxyMember = ctx.guild.get_member(proxies[1][key]["owner"])
+        embedVar.add_field(name=proxies[1][key]["name"], value="owned by: {0}\nbrackets: {1}\navatar url: {2}".format(proxyMember.name, key, proxies[1][key]["avatar"]), inline=False)
     msg = await ctx.send(embed=embedVar)
     await msg.add_reaction("🛑")
-    await msg.add_reaction("⬅️")
-    await msg.add_reaction("➡️")
+    if 2 in proxies:
+        await msg.add_reaction("⬅️")
+        await msg.add_reaction("➡️")
 
     def check(reaction, user):
         if int(user.id) == int(ctx.author.id):
@@ -584,34 +562,41 @@ async def gfind(ctx, *, search):
         else:
             return False
 
+    pageCount = 1
     while True:
         try:
             reaction, user = await uranium.wait_for("reaction_add", timeout=60.0, check=check)
         except asyncio.TimeoutError:
+            embedVar.set_footer(text="Message timeout. You can no longer interact with this message.")
+            await msg.edit(embed=embedVar)
             break
         else:
             userCheck = check("nothing", user)
             if userCheck == True:
                 if reaction.emoji == '🛑':
-                    await msg.delete()
+                    try:
+                        await msg.delete()
+                    except discord.errors.NotFound:
+                        pass
+                    break
                 elif reaction.emoji == '⬅️' or reaction.emoji == '➡️':
                     if reaction.emoji == '➡️':
-                        literalPageCount = pageCount + 1
-                        if literalPageCount == len(proxies):
-                            pageCount = 0
+                        if pageCount + 1 > len(proxies):
+                            pass
                         else:
                             pageCount += 1
-                    else:
-                        if pageCount == 0:
-                            pageCount = len(proxies) - 1
+                    elif reaction.emoji == '⬅️':
+                        if pageCount - 1 == 0:
+                            pass
                         else:
                             pageCount -= 1
                     embedVar = discord.Embed(
-                    description="A total of {0} isotope(s) matches your search. Page {1}/{2}.".format(proxyCount, pageCount + 1, len(proxies))
+                    description="A total of {0} isotope(s) matches your search. Page {1}/{2}.".format(proxyCount, pageCount, len(proxies))
                             )
-                    for x in proxies[pageCount]:
-                        proxyMember = ctx.guild.get_member(x[3])
-                        embedVar.add_field(name=x[1], value="owned by: {0}\nbrackets: {1}\navatar url: {2}".format(proxyMember.name, x[0], x[2]), inline=False)
+                    embedVar.set_footer(text="You have 1 minute to respond to this message in-between reactions.")
+                    for key, value in proxies[pageCount].items():
+                        proxyMember = ctx.guild.get_member(proxies[pageCount][key]["owner"])
+                        embedVar.add_field(name=proxies[pageCount][key]["name"], value="owned by: {0}\nbrackets: {1}\navatar url: {2}".format(proxyMember.name, key, proxies[pageCount][key]["avatar"]), inline=False)
                     await msg.edit(embed=embedVar)
 
 @uranium.command()
@@ -628,10 +613,11 @@ async def showmsg(ctx, user=None):
             embedVar = discord.Embed(
             title="Show Message", color=0x20FD00
                     )
-            embedVar.set_thumbnail(url=proxyAvatar)
+            if proxyAvatar != "N/A":
+                embedVar.set_thumbnail(url=proxyAvatar)
             embedVar.add_field(name="Isotope Information", value="Name: {0}\nBrackets: {1}\nAvatar: {2}".format(proxyName, brackets.strip(), proxyAvatar), inline=False)
             embedVar.add_field(name="User Information", value="This proxy was sent by:\nID: {0}\nUser: <@{0}>".format(userID), inline=False)
-            embedVar.set_footer(text="Message ID: {0}".format(reply))
+            embedVar.set_footer(text="Message ID: {0}".format(reply.id))
             await ctx.send(embed=embedVar)
     else:
         try:
@@ -645,23 +631,44 @@ async def showmsg(ctx, user=None):
             embedVar = discord.Embed(
             title="Show Message", color=0x20FD00
                     )
-            embedVar.set_thumbnail(url=proxyAvatar)
+            if proxyAvatar != "N/A":
+                embedVar.set_thumbnail(url=proxyAvatar)
             embedVar.add_field(name="Isotope Information", value="Name: {0}\nBrackets: {1}\nAvatar: {2}".format(proxyName, brackets.strip(), proxyAvatar), inline=False)
             embedVar.add_field(name="User Information", value="This proxy was sent by:\nID: {0}\nUser: <@{0}>".format(userID), inline=False)
             embedVar.add_field(name="Message Content", value=ctx.message.content, inline=False)
             embedVar.set_footer(text="Message ID: {0}".format(ctx.message.id))
             await dmChannel.send("Here's that information you wanted.", embed=embedVar)
 
-
-
 @uranium.command()
-async def isotope(ctx, *, name):
-    isotope = parseProxyByName(ctx, name.strip("\""))
+async def isotope(ctx, name):
+    datafile = loadData(ctx)
+    for key, value in datafile["isotopes"].items():
+        if name in datafile["isotopes"][key]["name"]:
+            if "variants" in datafile["isotopes"][key]:
+                variantsDetected = True
+            else:
+                variantsDetected = False
+            isotope = value
+            break
+    else:
+        await ctx.send(":x: Isotope not found.")
+        return
     embedVar = discord.Embed(
-    title="Show Isotope", color=0x20FD00
+    title=isotope["name"], color=0x20FD00, description=isotope["desc"]
             )
-    embedVar.set_thumbnail(url=isotope[2])
-    embedVar.add_field(name="Isotope Information", value="Name: {0}\nBrackets: {1}\nAvatar: {2}".format(isotope[1], isotope[0], isotope[2]), inline=False)
+    embedVar.add_field(name="Brackets", value=key, inline=True)
+    if isotope["avatar"] != "N/A":
+        embedVar.set_thumbnail(url=isotope["avatar"])
+        embedVar.add_field(name="Avatar", value="[Link]({0})".format(isotope["avatar"]), inline=True)
+    else:
+        embedVar.add_field(name="Avatar", value="N/A", inline=True)
+    embedVar.add_field(name="Post count", value=isotope["messages"], inline=True)
+    embedVar.add_field(name="Birthday", value=isotope["birthday"], inline=True)
+    embedVar.add_field(name="Tag", value=isotope["tag"], inline=True)
+    embedVar.add_field(name="Group", value=isotope["group"], inline=True)
+    embedVar.add_field(name="Registered", value=isotope["creationdate"], inline=True)
+    if variantsDetected == True:
+        embedVar.add_field(name="This Isotope has **variants**!", value="Use `{0}variants \"{1}\"` to show them.".format(settings.prefixes[0], isotope["name"]), inline=False)
     await ctx.send(embed=embedVar)
 
 f = open("token", "r")
